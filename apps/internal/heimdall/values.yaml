@@ -7,7 +7,7 @@ controllers:
     containers:
       main:
         image:
-          repository: lscr.io/linuxserver/heimdall:latest
+          repository: lscr.io/linuxserver/heimdall
           pullPolicy: IfNotPresent
           tag: 2.6.1
         env:
