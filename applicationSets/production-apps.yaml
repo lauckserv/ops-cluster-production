@@ -28,8 +28,7 @@ spec:
         path: "{{ path }}"
         repoURL: https://github.com/lauckserv/ops-cluster-production
         targetRevision: main
-        directory:
-          recurse: true
+
       destination:
         server: https://rancher.lauckserv.net/k8s/clusters/c-m-d25gnqct
         namespace: "{{ path[2] }}"
