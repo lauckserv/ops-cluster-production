@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: 1.4.0
+description: legacy php ipam from docker
+name: phpipam-legacy
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: common
+    version: 1.2.1
+    repository: https://bjw-s.github.io/helm-charts
