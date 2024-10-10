@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: "6.1.1"
+description: A free, open-source website creation platform
+name: wp-justinlauck
+type: application
+version: 0.1.0
+dependencies:
+  - name: wordpress
+    version: 23.1.21
+    repository: https://charts.bitnami.com/bitnami
