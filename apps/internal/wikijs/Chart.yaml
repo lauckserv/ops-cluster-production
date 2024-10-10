@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: 2.5.219
+description: A modern, lightweight and powerful wiki app built on NodeJS.
+name: wikijs
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: common
+    version: 1.2.1
+    repository: https://bjw-s.github.io/helm-charts
