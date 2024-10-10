@@ -1,0 +1,39 @@
+image:
+  repository: nodered/node-red
+  pullPolicy: IfNotPresent
+  tag: 3.0.2
+
+strategy:
+  type: Recreate
+
+env:
+  # -- Set the container timezone
+  TZ: "America/New_York"
+
+service:
+  main:
+    ports:
+      http:
+        port: 1880
+
+ingress:
+  main:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    labels:
+      ingressClassName: "nginx"
+    hosts:
+      - host: nodered.lauckserv.net
+        paths:
+          - path: /
+            pathType: Prefix
+
+persistence:
+  data:
+    enabled: true
+    type: pvc
+    accessMode: ReadWriteMany
+    size: 5Gi
+    storageClass: nfs-client

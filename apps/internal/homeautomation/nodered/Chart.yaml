@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: 3.0.2
+description: Low-code programming for event-driven applications 
+name: node-red
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: common
+    version: 1.2.1
+    repository: https://bjw-s.github.io/helm-charts
