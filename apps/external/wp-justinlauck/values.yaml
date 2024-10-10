@@ -17,13 +17,12 @@ wordpress:
           value: https
   service:
     type: ClusterIP
-    
+
   ingress:
     enabled: true
     ingressClassName: nginx
     hostname: www.justinlauck.com
-    annotations:
-      { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
+    annotations: { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
 
   persistence:
     enabled: true
@@ -32,6 +31,10 @@ wordpress:
   mariadb:
     auth:
       existingSecret: "wp-justinlauck-dbsecrets"
-    primary:
+    primary::
+      livenessProbe:
+        initialDelaySeconds: 600
+      readinessProbe:
+        initialDelaySeconds: 600
       persistence:
         storageClass: "nfs-client"
