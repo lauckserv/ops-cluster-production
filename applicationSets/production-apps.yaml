@@ -26,6 +26,9 @@ spec:
         path: "{{ path }}"
         directory:
           recurse: true
+        helm:
+          valueFiles:
+            - values.yaml
       destination:
         server: https://rancher.lauckserv.net/k8s/clusters/c-m-d25gnqct
         namespace: "{{ path[2] }}"
