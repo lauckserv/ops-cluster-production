@@ -1,0 +1,50 @@
+controllers:
+  main:
+    replicas: 1
+    strategy: Recreate
+    enabled: true
+    containers:
+      main:
+        image:
+          repository: ghcr.io/mealie-recipes/mealie
+          pullPolicy: IfNotPresent
+          tag: v1.12.0
+      env:
+        ALLOW_SIGNUP: "false"
+        TZ: America/New_York
+
+service:
+  main:
+    controller: main
+    ports:
+      http:
+        port: 9000
+
+ingress:
+  main:
+    hosts:
+      - host: mealie.lauckserv.net
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              port: http
+              identifier: main
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /
+      nginx.ingress.kubernetes.io/proxy-body-size: 500M
+    enabled: true
+    className: nginx
+
+persistence:
+  data:
+    enabled: true
+    storageClass: nfs-client
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    advancedMounts:
+      main:
+        main:
+          - path: /app/data/
+            readOnly: false
