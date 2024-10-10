@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: production-cluster-resources
+  labels:
+    lauckserv.io/environment: production
+    lauckserv.io/category: resources
+spec:
+  destination:
+    server: https://rancher.lauckserv.net/k8s/clusters/c-m-d25gnqct
+    namespace: cluster-tools
+  project: cluster-tools
+  source:
+    path: cluster-resources
+    repoURL: https://github.com/lauckserv/ops-cluster-production
+    targetRevision: HEAD
+    directory:
+      recurse: true
+      jsonnet: {}

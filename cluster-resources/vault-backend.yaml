@@ -1,0 +1,15 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: vault-backend
+spec:
+  provider:
+    vault:
+      server: "https://vault.lauckserv.net"
+      path: "kubernetes"
+      version: "v2"
+      auth:
+        tokenSecretRef:
+          name: "vault-token"
+          namespace: "external-secrets"
+          key: "token"
