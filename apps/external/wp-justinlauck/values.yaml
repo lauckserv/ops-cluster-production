@@ -31,7 +31,7 @@ wordpress:
   mariadb:
     auth:
       existingSecret: "wp-justinlauck-dbsecrets"
-    primary::
+    primary:
       livenessProbe:
         initialDelaySeconds: 600
       readinessProbe:
