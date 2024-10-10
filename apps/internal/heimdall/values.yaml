@@ -1,16 +1,20 @@
-image:
-  repository: linuxserver/heimdall
-  pullPolicy: IfNotPresent
-  tag: latest
-
-strategy:
-  type: Recreate
-
-env:
-  # -- Set the container timezone
-  TZ: "America/New_York"
-  #PUID: 995
-  #PGID: 993
+controllers:
+  main:
+    strategy: Recreate
+    type: deployment
+    replicas: 1
+    enabled: true
+    containers:
+      main:
+        image:
+          repository: lscr.io/linuxserver/heimdall:latest
+          pullPolicy: IfNotPresent
+          tag: 2.6.1
+        env:
+          # -- Set the container timezone
+          TZ: "America/New_York"
+          #PUID: 995
+          #PGID: 993
 
 service:
   main:
