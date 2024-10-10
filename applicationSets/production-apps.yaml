@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: production-apps
+  labels:
+    lauckserv.io/environment: production
+    lauckserv.io/category: app-set
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/lauckserv/ops-cluster-production
+        revision: HEAD
+        directories:
+          - path: apps/**/**/*
+  template:
+    metadata:
+      name: "{{path.basename}}-{{path[2]}}"
+      labels:
+        lauckserv.io/environment: production
+        lauckserv.io/category: app
+    spec:
+      project: "{{ path[1] }}-apps"
+      source:
+        repoURL: https://github.com/lauckserv/ops-cluster-production
+        targetRevision: main
+        path: "{{ path }}"
+        directory:
+          recurse: true
+      destination:
+        server: https://rancher.lauckserv.net/k8s/clusters/c-m-d25gnqct
+        namespace: "{{ path[2] }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
