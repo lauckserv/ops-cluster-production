@@ -1,10 +1,37 @@
 controllers:
   main:
     replicas: 1
-    strategy: Recreate
     enabled: true
     containers:
       main:
+        probes:
+          liveness:
+            spec:
+              failureThreshold: 3
+              periodSeconds: 10
+              timeoutSeconds: 1
+              initialDelaySeconds: 0
+            type: TCP
+            enabled: true
+            custom: false
+          readiness:
+            spec:
+              failureThreshold: 3
+              periodSeconds: 10
+              timeoutSeconds: 1
+              initialDelaySeconds: 0
+            type: TCP
+            enabled: true
+            custom: false
+          startup:
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+              timeoutSeconds: 1
+              initialDelaySeconds: 0
+            type: TCP
+            enabled: true
+            custom: false
         image:
           repository: ghcr.io/mealie-recipes/mealie
           pullPolicy: IfNotPresent
@@ -12,13 +39,21 @@ controllers:
       env:
         ALLOW_SIGNUP: "false"
         TZ: America/New_York
+      strategy:
+        type: Recreate
+    type: deployment
+    strategy: Recreate
 
 service:
   main:
+    primary: true
     controller: main
+    type: ClusterIP
     ports:
       http:
         port: 9000
+        primary: true
+        enabled: true
 
 ingress:
   main:
