@@ -1,5 +1,0 @@
-{
-    "repository": "donkie/spoolman",
-    "stripVFromVersion": true,
-    "tagPath": "controllers.main.containers.main.image.tag"
-}
