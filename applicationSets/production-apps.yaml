@@ -11,7 +11,7 @@ spec:
         repoURL: https://github.com/lauckserv/ops-cluster-production
         revision: HEAD
         directories:
-          - path: apps/**/**/*
+          - path: apps/**/*
   template:
     metadata:
       name: "{{path.basename}}"
