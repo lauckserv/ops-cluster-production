@@ -14,16 +14,20 @@ spec:
           - path: apps/**/*
   template:
     metadata:
-      name: "{{path.basename}}-{{path[2]}}"
+      name: "{{path.basename}}"
       labels:
         lauckserv.io/environment: production
-        lauckserv.io/category: app
+        lauckserv.io/category: "{{path[1]}}"
     spec:
       project: "{{ path[1] }}-apps"
       source:
+        helm:
+          version: v3
+          valueFiles:
+            - values.yaml
+        path: "{{ path }}"
         repoURL: https://github.com/lauckserv/ops-cluster-production
         targetRevision: main
-        path: "{{ path }}"
         directory:
           recurse: true
       destination:
