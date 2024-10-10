@@ -17,18 +17,15 @@ spec:
       name: "{{path.basename}}"
       labels:
         lauckserv.io/environment: production
-        lauckserv.io/category: "{{path[1]}}"
+        lauckserv.io/category: app
     spec:
       project: "{{ path[1] }}-apps"
       source:
-        helm:
-          version: v3
-          valueFiles:
-            - values.yaml
-        path: "{{ path }}"
         repoURL: https://github.com/lauckserv/ops-cluster-production
         targetRevision: main
-
+        path: "{{ path }}"
+        directory:
+          recurse: true
       destination:
         server: https://rancher.lauckserv.net/k8s/clusters/c-m-d25gnqct
         namespace: "{{ path[2] }}"
@@ -36,3 +33,5 @@ spec:
         automated:
           prune: true
           selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
