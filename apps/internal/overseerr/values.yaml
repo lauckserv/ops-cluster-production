@@ -62,7 +62,7 @@ ingress:
               identifier: main
             path: /
             pathType: Prefix
-        host: changedetection.lauckserv.net
+        host: overseerr.lauckserv.net
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/rewrite-target: /
