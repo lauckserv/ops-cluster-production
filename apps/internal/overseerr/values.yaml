@@ -34,7 +34,7 @@ controllers:
             enabled: true
             custom: false
         image:
-          repository: lscr.io/linuxserver/overseerr:latest
+          repository: lscr.io/linuxserver/overseerr
           pullPolicy: IfNotPresent
           tag: 1.33.2
         env:
