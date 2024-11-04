@@ -1,0 +1,10 @@
+version: 3.5.1
+appVersion: v0.9.11
+type: application
+dependencies:
+  - version: 3.5.1
+    repository: https://bjw-s.github.io/helm-charts
+    name: common
+description: homepage
+apiVersion: v2
+name: homepage
