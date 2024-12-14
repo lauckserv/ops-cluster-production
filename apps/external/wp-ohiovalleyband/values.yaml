@@ -1,0 +1,37 @@
+wordpress:
+  wordpressUsername: admin
+  wordpressScheme: https
+  allowEmptyPassword: false
+
+  existingSecret: "wp-ohiovalleyband-usersecrets"
+
+  livenessProbe:
+    httpGet:
+      httpHeaders:
+        - name: X-Forwarded-Proto
+          value: https
+  readinessProbe:
+    httpGet:
+      httpHeaders:
+        - name: X-Forwarded-Proto
+          value: https
+  service:
+    type: ClusterIP
+    
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hostname: www.ohiovalleyband.org
+    annotations:
+      { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
+
+  persistence:
+    enabled: true
+    storageClass: "nfs-client"
+
+  mariadb:
+    auth:
+      existingSecret: "wp-ohiovalleyband-dbsecrets"
+    primary:
+      persistence:
+        storageClass: "nfs-client"
