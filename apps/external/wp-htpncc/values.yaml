@@ -5,11 +5,6 @@ wordpress:
 
   existingSecret: "wp-htpncc-usersecrets"
 
-  livenessProbe:
-    httpGet:
-      httpHeaders:
-        - name: X-Forwarded-Proto
-          value: https
   readinessProbe:
     httpGet:
       httpHeaders:
@@ -17,13 +12,12 @@ wordpress:
           value: https
   service:
     type: ClusterIP
-    
+
   ingress:
     enabled: true
     ingressClassName: nginx
     hostname: www.htpncc.org
-    annotations:
-      { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
+    annotations: { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
 
   persistence:
     enabled: true
@@ -33,5 +27,9 @@ wordpress:
     auth:
       existingSecret: "wp-htpncc-dbsecrets"
     primary:
+      livenessProbe:
+        initialDelaySeconds: 600
+      readinessProbe:
+        initialDelaySeconds: 600
       persistence:
         storageClass: "nfs-client"
