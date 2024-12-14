@@ -27,9 +27,5 @@ wordpress:
     auth:
       existingSecret: "wp-htpncc-dbsecrets"
     primary:
-      livenessProbe:
-        initialDelaySeconds: 600
-      readinessProbe:
-        initialDelaySeconds: 600
       persistence:
         storageClass: "nfs-client"
