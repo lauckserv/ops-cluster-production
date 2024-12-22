@@ -10,20 +10,21 @@ wordpress:
       httpHeaders:
         - name: X-Forwarded-Proto
           value: https
+
   readinessProbe:
     httpGet:
       httpHeaders:
         - name: X-Forwarded-Proto
           value: https
+
   service:
     type: ClusterIP
-    
+
   ingress:
     enabled: true
     ingressClassName: nginx
     hostname: www.justinlauck.com
-    annotations:
-      { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
+    annotations: { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
 
   persistence:
     enabled: true
