@@ -5,12 +5,6 @@ wordpress:
 
   existingSecret: "wp-justinlauck-usersecrets"
 
-  livenessProbe:
-    httpGet:
-      httpHeaders:
-        - name: X-Forwarded-Proto
-          value: https
-
   readinessProbe:
     httpGet:
       httpHeaders:
@@ -36,3 +30,7 @@ wordpress:
     primary:
       persistence:
         storageClass: "nfs-client"
+      livenessProbe:
+        initialDelaySeconds: 30
+      readinessProbe:
+        initialDelaySeconds: 30
