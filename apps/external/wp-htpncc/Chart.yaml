@@ -1,10 +1,10 @@
 apiVersion: v2
-appVersion: "6.4.2"
+appVersion: "6.4.3"
 description: A free, open-source website creation platform
 name: wp-htpncc
 type: application
 version: 0.1.0
 dependencies:
   - name: wordpress
-    version: 18.1.30
+    version: 19.4.3
     repository: https://charts.bitnami.com/bitnami
