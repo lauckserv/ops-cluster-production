@@ -11,6 +11,8 @@ wordpress:
         - name: X-Forwarded-Proto
           value: https
 
+  replicaCount: 2
+
   service:
     type: ClusterIP
 
