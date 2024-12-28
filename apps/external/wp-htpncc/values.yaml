@@ -1,6 +1,7 @@
 wordpress:
   wordpressUsername: admin
   wordpressScheme: https
+  wordpressConfigureCache: true
   allowEmptyPassword: false
 
   existingSecret: "wp-htpncc-usersecrets"
@@ -32,3 +33,6 @@ wordpress:
     primary:
       persistence:
         storageClass: "nfs-client"
+
+  memcached:
+    enabled: true
