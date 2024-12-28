@@ -1,5 +1,5 @@
 version: 3.5.1
-appVersion: 0.47.05
+appVersion: 0.48.05
 type: application
 dependencies:
   - version: 3.5.1
