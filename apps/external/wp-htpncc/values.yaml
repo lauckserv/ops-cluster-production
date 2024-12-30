@@ -31,6 +31,6 @@ wordpress:
       persistence:
         storageClass: "nfs-client"
       livenessProbe:
-        initialDelaySeconds: 600
+        initialDelaySeconds: 60
       readinessProbe:
-        initialDelaySeconds: 600
+        initialDelaySeconds: 60
