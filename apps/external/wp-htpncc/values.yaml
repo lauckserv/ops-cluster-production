@@ -11,6 +11,11 @@ wordpress:
         - name: X-Forwarded-Proto
           value: https
 
+  resources:
+    limits:
+      cpu: 2048m
+      memory: 1024Mi
+
   service:
     type: ClusterIP
 
