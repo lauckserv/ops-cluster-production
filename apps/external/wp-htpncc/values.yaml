@@ -1,36 +1,36 @@
-wordpress:
-  wordpressUsername: admin
-  wordpressScheme: https
-  wordpressConfigureCache: true
-  allowEmptyPassword: false
+# wordpress:
+#   wordpressUsername: admin
+#   wordpressScheme: https
+#   wordpressConfigureCache: true
+#   allowEmptyPassword: false
 
-  existingSecret: "wp-htpncc-usersecrets"
+#   existingSecret: "wp-htpncc-usersecrets"
 
-  readinessProbe:
-    httpGet:
-      httpHeaders:
-        - name: X-Forwarded-Proto
-          value: https
+#   readinessProbe:
+#     httpGet:
+#       httpHeaders:
+#         - name: X-Forwarded-Proto
+#           value: https
 
-  service:
-    type: ClusterIP
+#   service:
+#     type: ClusterIP
 
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-    hostname: www.htpncc.org
-    annotations: { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
+#   ingress:
+#     enabled: true
+#     ingressClassName: nginx
+#     hostname: www.htpncc.org
+#     annotations: { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
 
-  persistence:
-    enabled: true
-    storageClass: "nfs-client"
+#   persistence:
+#     enabled: true
+#     storageClass: "nfs-client"
 
-  mariadb:
-    auth:
-      existingSecret: "wp-htpncc-dbsecrets"
-    primary:
-      persistence:
-        storageClass: "nfs-client"
+#   mariadb:
+#     auth:
+#       existingSecret: "wp-htpncc-dbsecrets"
+#     primary:
+#       persistence:
+#         storageClass: "nfs-client"
 
-  memcached:
-    enabled: true
+#   memcached:
+#     enabled: true
