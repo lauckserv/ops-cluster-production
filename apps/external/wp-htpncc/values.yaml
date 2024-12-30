@@ -12,9 +12,12 @@ wordpress:
           value: https
 
   resources:
+    requests:
+      cpu: 500m
+      memory: 768Mi
     limits:
-      cpu: 2048m
-      memory: 1024Mi
+      cpu: 1024m
+      memory: 1536Mi
 
   service:
     type: ClusterIP
@@ -35,6 +38,13 @@ wordpress:
     primary:
       persistence:
         storageClass: "nfs-client"
+      resources:
+        requests:
+          cpu: 256m
+          memory: 256Mi
+        limits:
+          cpu: 1024m
+          memory: 1024Mi
       livenessProbe:
         initialDelaySeconds: 60
       readinessProbe:
