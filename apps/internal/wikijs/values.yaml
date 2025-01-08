@@ -46,12 +46,14 @@ persistence:
   config:
     enabled: true
     accessMode: ReadWriteMany
-    size: 2Gi
+    path: config
+    size: 1Gi
+    storageClass: nfs-client
     type: persistentVolumeClaim
-    advancedMounts:
-      wikijs:
-        wikijs:
-          - path: /config
-            subPath: config
-          - path: /data
-            subPath: data
+  data:
+    enabled: true
+    accessMode: ReadWriteMany
+    path: data
+    size: 2Gi
+    storageClass: nfs-client
+    type: persistentVolumeClaim
