@@ -1,0 +1,96 @@
+controllers:
+  lychee:
+    enabled: true
+    containers:
+      lychee:
+        image:
+          repository: lycheeorg/lychee
+          pullPolicy: IfNotPresent
+          tag: v6.2.0
+        strategy:
+          type: Recreate
+        enfFrom:
+          - secretRef:
+              name: lychee-demo-dbsecrets
+        env:
+          PHP_TZ: America/New_York
+          TIMEZONE: America/New_York
+          DB_CONNECTION:
+          DB_HOST: mariadb
+          DB_PORT: 3306
+          DB_DATABASE: lychee
+    type: deployment
+  mariadb:
+    enabled: true
+    containers:
+      mariadb:
+        image:
+          repository: mariadb
+          pullPolicy: IfNotPresent
+          tag: 11.6.2
+        strategy:
+          type: Recreate
+        env:
+          MARIADB_DATABASE: lychee
+        envFrom:
+          - secretRef:
+              name: lychee-demo-dbsecrets
+    type: statefulset
+
+service:
+  lychee:
+    primary: true
+    controller: lychee
+    ports:
+      http:
+        primary: true
+        port: 90
+        enabled: true
+    type: ClusterIP
+  mariadb:
+    primary: true
+    controller: mariadb
+    ports:
+      mariadb:
+        primary: true
+        port: 3306
+        enabled: true
+    type: ClusterIP
+
+ingress:
+  lychee:
+    className: nginx
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    hosts:
+      - host: lychee-demo.lauckserv.net
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              port: http
+              identifier: lychee
+# persistence:
+#   config:
+#     enabled: true
+#     accessMode: ReadWriteMany
+#     path: /conf
+#     size: 1Gi
+#     storageClass: nfs-client
+#     type: persistentVolumeClaim
+#   sym:
+#     enabled: true
+#     accessMode: ReadWriteMany
+#     path: /sym
+#     size: 1Gi
+#     storageClass: nfs-client
+#     type: persistentVolumeClaim
+#   uploads:
+#     enabled: true
+#     accessMode: ReadWriteMany
+#     path: /uploads
+#     size: 20Gi
+#     storageClass: nfs-client
+#     type: persistentVolumeClaim

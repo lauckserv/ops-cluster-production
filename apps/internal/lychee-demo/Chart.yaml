@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: 6.2.0
+description: A great looking and easy-to-use photo-management-system you can run on your server, to manage and share photos.
+name: lychee
+type: application
+version: 1.0.0
+
+dependencies:
+  - name: common
+    version: 3.6.0
+    repository: https://bjw-s.github.io/helm-charts
