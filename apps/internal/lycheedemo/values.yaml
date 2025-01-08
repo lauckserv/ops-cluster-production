@@ -16,7 +16,7 @@ controllers:
           PHP_TZ: America/New_York
           TIMEZONE: America/New_York
           DB_CONNECTION: mariadb
-          DB_HOST: lycheedemo-mariadb-0
+          DB_HOST: lycheedemo-mariadb
           DB_PORT: 3306
           DB_DATABASE: lychee
     type: deployment
