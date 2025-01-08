@@ -43,17 +43,16 @@ ingress:
               identifier: wikijs
 
 persistence:
-  wikijs:
+  config:
     enabled: true
     accessMode: ReadWriteMany
     size: 2Gi
     storageClass: nfs-client
     type: persistentVolumeClaim
-    volumeSpec:
-      configMap:
-        name: myData
-    subPath:
-      - path: config
-        mountPath: /config
-      - path: data
-        mountPath: /data
+    advancedMounts:
+      wikijs:
+        wikijs:
+          - path: /config
+            subPath: config
+          - path: /data
+            subPath: data
