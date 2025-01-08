@@ -1,10 +1,19 @@
-image:
-  repository: linuxserver/wikijs
-  pullPolicy: IfNotPresent
-  tag: 2.5.219
+controllers:
+  main:
+    type: statefulset
 
-strategy:
-  type: Recreate
+  containers:
+    main:
+      image:
+        repository: ghcr.io/linuxserver/wikijs
+        pullPolicy: IfNotPresent
+        tag: 2.5.305
+      strategy:
+        type: Recreate
+      env:
+        PUID: 1000
+        PGID: 1000
+        TZ: America/New_York
 
 service:
   main:
@@ -13,23 +22,18 @@ service:
         port: 3000
 
 ingress:
-  main: 
+  main:
     enabled: true
-    annotations: 
+    annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/rewrite-target: /
-    labels: 
+    labels:
       ingressClassName: "nginx"
     hosts:
       - host: wiki.lauckserv.net
         paths:
           - path: /
             pathType: Prefix
-
-env:
-  PUID: 1000
-  PGID: 1000
-  TZ: America/New_York
 
 persistence:
   config:
@@ -38,7 +42,7 @@ persistence:
     volumeSpec:
       configMap:
         name: myData
-    subPath: 
+    subPath:
       - path: config
         mountPath: /config
       - path: data
