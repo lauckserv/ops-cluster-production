@@ -36,7 +36,7 @@ controllers:
         image:
           repository: ghcr.io/donkie/spoolman
           pullPolicy: IfNotPresent
-          tag: 0.20.0
+          tag: 0.21.0
         env:
           TZ: America/New_York
         strategy:
