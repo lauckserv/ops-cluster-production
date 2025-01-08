@@ -30,6 +30,11 @@ spec:
       destination:
         server: https://rancher.lauckserv.net/k8s/clusters/c-m-d25gnqct
         namespace: "{{ path[2] }}"
+      ignoreDifferences:
+        - group: "*"
+          kind: "Deployment"
+          jsonPointers:
+            - /spec/template/spec/hostUsers
       syncPolicy:
         automated:
           prune: true
