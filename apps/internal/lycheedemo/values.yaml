@@ -45,7 +45,7 @@ service:
     ports:
       http:
         primary: true
-        port: 90
+        port: 80
         enabled: true
     type: ClusterIP
   mariadb:
