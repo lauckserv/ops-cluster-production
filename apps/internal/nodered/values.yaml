@@ -6,7 +6,7 @@ controllers:
         image:
           repository: nodered/node-red
           pullPolicy: IfNotPresent
-          tag: 3.1.15
+          tag: 4.0.8
         strategy:
           type: Recreate
         env:
