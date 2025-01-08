@@ -47,7 +47,6 @@ persistence:
     enabled: true
     accessMode: ReadWriteMany
     size: 2Gi
-    storageClass: nfs-client
     type: persistentVolumeClaim
     advancedMounts:
       wikijs:
