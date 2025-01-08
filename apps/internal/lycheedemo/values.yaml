@@ -40,6 +40,7 @@ controllers:
 service:
   lychee:
     primary: true
+    nameOverride: lychee
     controller: lychee
     ports:
       http:
@@ -49,6 +50,7 @@ service:
     type: ClusterIP
   mariadb:
     primary: true
+    nameOverride: mariadb
     controller: mariadb
     ports:
       mariadb:
