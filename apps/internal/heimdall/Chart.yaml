@@ -1,11 +1,11 @@
 apiVersion: v2
-appVersion: 2.2.2
+appVersion: 2.6.3
 description: Heimdall Application Dashboard is a dashboard for all your web applications
 name: heimdall
 type: application
-version: 0.1.0
+version: 3.6.0
 
 dependencies:
   - name: common
-    version: 1.2.1
+    version: 3.6.0
     repository: https://bjw-s.github.io/helm-charts
