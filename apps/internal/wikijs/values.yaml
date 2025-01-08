@@ -1,39 +1,46 @@
 controllers:
   wikijs:
-    type: statefulset
-
-  containers:
-    wikijs:
-      image:
-        repository: ghcr.io/linuxserver/wikijs
-        pullPolicy: IfNotPresent
-        tag: 2.5.305
-      strategy:
-        type: Recreate
-      env:
-        PUID: 1000
-        PGID: 1000
-        TZ: America/New_York
+    enabled: true
+    containers:
+      wikijs:
+        image:
+          repository: ghcr.io/linuxserver/wikijs
+          pullPolicy: IfNotPresent
+          tag: 2.5.305
+        strategy:
+          type: Recreate
+        env:
+          PUID: 1000
+          PGID: 1000
+          TZ: America/New_York
+    type: deployment
 
 service:
   wikijs:
+    primary: true
+    controller: wikijs
     ports:
       http:
+        primary: true
         port: 3000
+        enabled: true
+    type: ClusterIP
 
 ingress:
   wikijs:
+    className: nginx
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/rewrite-target: /
-    labels:
-      ingressClassName: "nginx"
     hosts:
       - host: wiki.lauckserv.net
         paths:
           - path: /
             pathType: Prefix
+            service:
+              port: http
+              identifier: wikijs
 
 persistence:
   config:
@@ -49,4 +56,4 @@ persistence:
         mountPath: /data
     size: 2Gi
     storageClass: nfs-client
-    type: pvc
+    type: persistentVolumeClaim
