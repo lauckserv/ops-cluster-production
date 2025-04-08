@@ -39,6 +39,7 @@ controllers:
           tag: 0.21.0
         env:
           TZ: America/New_York
+          SPOOLMAN_DEBUG_MODE: true
         strategy:
           type: Recreate
     type: deployment
