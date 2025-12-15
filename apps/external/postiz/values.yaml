@@ -72,6 +72,9 @@ postgresql:
   service:
     ports:
       postgresql: 5432
+  persistence:
+    enabled: true
+    storageClass: "nfs-client"
 
 # Redis configuration
 redis:
@@ -82,6 +85,9 @@ redis:
     service:
       ports:
         redis: 6379
+  persistence:
+    enabled: true
+    storageClass: "nfs-client"
 
 # Environment variables
 env:
