@@ -62,10 +62,6 @@ tolerations: []
 
 affinity: {}
 
-persistence:
-  enabled: true
-  storageClass: "nfs-client"
-  
 # PostgreSQL configuration
 postgresql:
   enabled: true
