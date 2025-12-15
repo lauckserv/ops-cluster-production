@@ -19,12 +19,12 @@ controllers:
           JWT_SECRET:
             valueFrom:
               secretKeyRef:
-                name: postiz-external
+                name: postiz-secrets
                 key: jwt-secret
           DATABASE_URL:
             valueFrom:
               secretKeyRef:
-                name: postiz-external
+                name: postiz-secrets
                 key: database-url
           REDIS_URL: "redis://redis:6379"
           BACKEND_INTERNAL_URL: "http://localhost:3000"
@@ -196,7 +196,7 @@ controllers:
           POSTGRES_PASSWORD:
             valueFrom:
               secretKeyRef:
-                name: postiz-external
+                name: postiz-secrets
                 key: postgres-password
           POSTGRES_USER: postiz-user
           POSTGRES_DB: postiz-db-local
