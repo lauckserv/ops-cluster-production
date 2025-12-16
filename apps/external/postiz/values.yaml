@@ -58,8 +58,16 @@ postiz:
             BEEHIIVE_PUBLICATION_ID: ""
             THREADS_APP_ID: ""
             THREADS_APP_SECRET: ""
-            FACEBOOK_APP_ID: ""
-            FACEBOOK_APP_SECRET: ""
+            FACEBOOK_APP_ID:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: FACEBOOK_APP_ID
+            FACEBOOK_APP_SECRET:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: FACEBOOK_APP_SECRET
             YOUTUBE_CLIENT_ID: ""
             YOUTUBE_CLIENT_SECRET: ""
             TIKTOK_CLIENT_ID: ""
