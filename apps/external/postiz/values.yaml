@@ -196,7 +196,7 @@ controllers:
           POSTGRES_PASSWORD:
             valueFrom:
               secretKeyRef:
-                name: postiz-external
+                name: postiz-secrets
                 key: postgres-password
           POSTGRES_USER: postiz-user
           POSTGRES_DB: postiz-db-local
@@ -370,7 +370,7 @@ persistence:
         main:
           - path: /var/lib/postgresql/data
             readOnly: false
-            
+
   redis-data:
     enabled: true
     type: persistentVolumeClaim
