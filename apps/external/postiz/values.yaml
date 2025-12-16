@@ -177,6 +177,7 @@ postiz:
   service:
     postiz:
       enabled: true
+      primary: true
       controller: postiz
       ports:
         http:
