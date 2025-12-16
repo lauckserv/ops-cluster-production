@@ -16,7 +16,7 @@ postiz:
             # === Required Settings ===
             MAIN_URL: "https://postiz.lauckserv.com"
             FRONTEND_URL: "https://postiz.lauckserv.com"
-            NEXT_PUBLIC_BACKEND_URL: "https://postiz.lauckserv.com/public/v1"
+            NEXT_PUBLIC_BACKEND_URL: "https://postiz.lauckserv.com/api"
             JWT_SECRET:
               valueFrom:
                 secretKeyRef:
@@ -182,6 +182,8 @@ postiz:
       ports:
         http:
           port: 5000
+        api:
+          port: 3000
     
     postgres:
       controller: postgres
@@ -214,3 +216,8 @@ postiz:
               service:
                 identifier: postiz
                 port: http
+            - path: /api
+              pathType: Prefix
+              service:
+                identifier: postiz
+                port: api
