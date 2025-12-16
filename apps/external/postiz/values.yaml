@@ -363,7 +363,7 @@ persistence:
     enabled: true
     type: persistentVolumeClaim
     storageClass: nfs-client
-    accessMode: ReadWriteOnce
+    accessMode: ReadWriteMany
     size: 10Gi
     advancedMounts:
       postgres:
@@ -375,7 +375,7 @@ persistence:
     enabled: true
     type: persistentVolumeClaim
     storageClass: nfs-client
-    accessMode: ReadWriteOnce
+    accessMode: ReadWriteMany
     size: 1Gi
     advancedMounts:
       redis:
