@@ -2,9 +2,10 @@ apiVersion: v2
 name: postiz
 description: Postiz is the ultimate AI social media scheduling tool. Schedule posts, measure analytics, collaborate with team members, and automate your social media management. Supports X (Twitter), LinkedIn, Instagram, Facebook, TikTok, YouTube, Reddit, Discord, Mastodon, and many more platforms.
 type: application
-version: 3.6.0
+version: 4.5.0
 appVersion: 2.10.1
 dependencies:
-  - name: common
+  - name: app-template
+    version: 4.5.0
     repository: https://bjw-s-labs.github.io/helm-charts
-    version: 3.6.0
+    alias: postiz
