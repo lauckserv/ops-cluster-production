@@ -190,16 +190,18 @@ controllers:
       main:
         image:
           repository: postgres
-          tag: 17-alpine
+          tag: 17
           pullPolicy: IfNotPresent
+        envFrom:
+        - secretRef:
+            name: postiz-secrets
         env:
-          POSTGRES_PASSWORD:
-            valueFrom:
-              secretKeyRef:
-                name: postiz-secrets
-                key: postgres-password
-          POSTGRES_USER: postiz-user
-          POSTGRES_DB: postiz-db-local
+        - value: 5432
+          name: POSTGRES_PORT
+        - value: postgres-service
+          name: POSTGRES_HOST
+        - value: postiz-db
+          name: POSTGRES_DB
 
   # redis:
   #   enabled: true
