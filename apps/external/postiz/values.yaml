@@ -174,12 +174,10 @@ postiz:
               readOnly: false
       retain: true
 
-
   service:
     postiz:
       enabled: true
       controller: postiz
-      type: ClusterIP
       ports:
         http:
           port: 5000
