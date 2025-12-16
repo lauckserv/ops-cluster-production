@@ -200,40 +200,7 @@ controllers:
                 key: postgres-password
           POSTGRES_USER: postiz-user
           POSTGRES_DB: postiz-db-local
-        probes:
-          liveness:
-            enabled: true
-            type: exec
-            custom: true
-            spec:
-              exec:
-                command:
-                  - pg_isready
-                  - -U
-                  - postiz-user
-                  - -d
-                  - postiz-db-local
-              initialDelaySeconds: 10
-              periodSeconds: 10
-              timeoutSeconds: 3
-              failureThreshold: 3
-          readiness:
-            enabled: true
-            type: exec
-            custom: true
-            spec:
-              exec:
-                command:
-                  - pg_isready
-                  - -U
-                  - postiz-user
-                  - -d
-                  - postiz-db-local
-              initialDelaySeconds: 10
-              periodSeconds: 10
-              timeoutSeconds: 3
-              failureThreshold: 3
-  
+
   redis:
     enabled: true
     type: deployment
