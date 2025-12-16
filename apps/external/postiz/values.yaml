@@ -181,27 +181,27 @@ controllers:
   #             sleep 2
   #           done
 
-  # postgres:
-  #   enabled: true
-  #   type: deployment
-  #   replicas: 1
-  #   strategy: Recreate
-  #   containers:
-  #     main:
-  #       image:
-  #         repository: postgres
-  #         tag: 17
-  #         pullPolicy: IfNotPresent
-  #       envFrom:
-  #       - secretRef:
-  #           name: postiz-secrets
-  #       env:
-  #       - value: 5432
-  #         name: POSTGRES_PORT
-  #       - value: postgres-service
-  #         name: POSTGRES_HOST
-  #       - value: postiz-db
-  #         name: POSTGRES_DB
+  postgres:
+    enabled: true
+    type: deployment
+    replicas: 1
+    strategy: Recreate
+    containers:
+      main:
+        image:
+          repository: postgres
+          tag: 17
+          pullPolicy: IfNotPresent
+        envFrom:
+        - secretRef:
+            name: postiz-secrets
+        env:
+        - value: 5432
+          name: POSTGRES_PORT
+        - value: postgres-service
+          name: POSTGRES_HOST
+        - value: postiz-db
+          name: POSTGRES_DB
 
   # redis:
   #   enabled: true
@@ -264,13 +264,13 @@ service:
   #       primary: true
   #       port: 5000
   
-  # postgres:
-  #   controller: postgres
-  #   type: ClusterIP
-  #   ports:
-  #     postgres:
-  #       enabled: true
-  #       port: 5432
+  postgres:
+    controller: postgres
+    type: ClusterIP
+    ports:
+      postgres:
+        enabled: true
+        port: 5432
   
   # redis:
   #   controller: redis
