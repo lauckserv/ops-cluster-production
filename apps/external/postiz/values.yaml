@@ -16,7 +16,7 @@ postiz:
             # === Required Settings ===
             MAIN_URL: "https://postiz.lauckserv.com"
             FRONTEND_URL: "https://postiz.lauckserv.com"
-            NEXT_PUBLIC_BACKEND_URL: "https://postiz.lauckserv.com/api"
+            NEXT_PUBLIC_BACKEND_URL: "https://postiz.lauckserv.com/public/v1"
             JWT_SECRET:
               valueFrom:
                 secretKeyRef:
