@@ -28,7 +28,7 @@ postiz:
                   name: postiz-secrets
                   key: POSTGRES_URL
             REDIS_URL: "redis://redis:6379"
-            BACKEND_INTERNAL_URL: "https://postiz.lauckserv.com:3000"
+            BACKEND_INTERNAL_URL: "http://localhost:3000"
             IS_GENERAL: "true"
             DISABLE_REGISTRATION: "false"
             
