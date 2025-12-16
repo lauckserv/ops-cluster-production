@@ -182,8 +182,6 @@ postiz:
       ports:
         http:
           port: 5000
-        api:
-          port: 3000
     
     postgres:
       controller: postgres
@@ -216,8 +214,3 @@ postiz:
               service:
                 identifier: postiz
                 port: http
-            - path: /api
-              pathType: Prefix
-              service:
-                identifier: postiz
-                port: api
