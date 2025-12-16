@@ -26,7 +26,7 @@ postiz:
               valueFrom:
                 secretKeyRef:
                   name: postiz-secrets
-                  key: database-url
+                  key: POSTGRES_URL
             REDIS_URL: "redis://redis:6379"
             BACKEND_INTERNAL_URL: "http://localhost:3000"
             IS_GENERAL: "true"
