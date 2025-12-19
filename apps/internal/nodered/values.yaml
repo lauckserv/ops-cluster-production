@@ -6,7 +6,7 @@ controllers:
         image:
           repository: ghcr.io/node-red/node-red
           pullPolicy: IfNotPresent
-          tag: v4.1.2
+          tag: 4.1.2
         strategy:
           type: Recreate
         env:
