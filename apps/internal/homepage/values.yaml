@@ -36,7 +36,7 @@ controllers:
         image:
           repository: ghcr.io/gethomepage/homepage
           pullPolicy: IfNotPresent
-          tag: v0.9.11
+          tag: v1.8.0
         env:
           TZ: America/New_York
         strategy:
