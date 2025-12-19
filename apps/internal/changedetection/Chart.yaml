@@ -1,9 +1,9 @@
-version: 3.5.1
+version: 3.7.3
 appVersion: 0.51.4
 type: application
 dependencies:
-  - version: 3.5.1
-    repository: https://bjw-s.github.io/helm-charts
+  - version: 3.7.3
+    repository: https://bjw-s-labs.github.io/helm-charts
     name: common
 description: changedetection.io
 apiVersion: v2
