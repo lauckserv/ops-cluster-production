@@ -4,9 +4,9 @@ controllers:
     containers:
       node-red:
         image:
-          repository: nodered/node-red
+          repository: ghcr.io/node-red/node-red
           pullPolicy: IfNotPresent
-          tag: 4.0.8
+          tag: v4.1.2
         strategy:
           type: Recreate
         env:
