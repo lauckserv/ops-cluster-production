@@ -5,7 +5,7 @@ wordpress:
 
   image:
     repository: bitnamilegacy/wordpress
-    tag: wordpress:6.7.1-debian-12-r9
+    tag: 6.7.1-debian-12-r9
 
   existingSecret: "wp-htpncc-usersecrets"
 
