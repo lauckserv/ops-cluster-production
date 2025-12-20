@@ -1,36 +1,47 @@
-image:
-  repository: hardware/rainloop
-  pullPolicy: IfNotPresent
-  tag: 1.13.0
-
-strategy:
-  type: Recreate
+controllers:
+  rainloop:
+    enabled: true
+    containers:
+      rainloop:
+        image:
+          repository: hardware/rainloop
+          pullPolicy: IfNotPresent
+          tag: 1.13.0
+        strategy:
+        type: Recreate
 
 service:
-  main:
+  rainloop:
+    primary: true
+    controller: rainloop
     ports:
       http:
+        primary: true
         port: 8888
+        enabled: true
+    type: ClusterIP
 
 ingress:
-  main:
+  rainloop:
+    className: nginx
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/rewrite-target: /
-    labels:
-      ingressClassName: "nginx"
     hosts:
       - host: webmail.lauckserv.net
         paths:
           - path: /
             pathType: Prefix
+            service:
+              port: http
+              identifier: rainloop
 
 persistence:
   config:
-    accessMode: ReadWriteMany
     enabled: true
-    mountPath: /rainloop/data
+    accessMode: ReadWriteMany
+    path: /rainloop/data
     size: 1Gi
     storageClass: nfs-client
-    type: pvc
+    type: persistentVolumeClaim
