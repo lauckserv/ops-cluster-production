@@ -40,7 +40,7 @@ wordpress:
         initialDelaySeconds: 30
     image:
       repository: bitnamilegacy/mariadb
-      tag: 10.6.11-debian-11-r22
+      tag: 11.4.4-debian-12-r2
 
 global:
   security:
