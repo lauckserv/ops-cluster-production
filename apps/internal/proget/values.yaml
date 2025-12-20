@@ -1,41 +1,52 @@
-image:
-  repository: proget.inedo.com/productimages/inedo/proget
-  pullPolicy: IfNotPresent
-  tag: 22.0.30
-
-strategy:
-  type: Recreate
+controllers:
+  proget:
+    enabled: true
+    containers:
+      proget:
+        image:
+          repository: proget.inedo.com/productimages/inedo/proget
+          pullPolicy: IfNotPresent
+          tag: 22.0.30
+        strategy:
+        type: Recreate
+        envFrom:
+          - secretRef:
+              name: proget-secrets
 
 service:
-  main:
+  proget:
+    primary: true
+    controller: proget
     ports:
       http:
+        primary: true
         port: 80
+        enabled: true
+    type: ClusterIP
 
-envFrom:
-  - secretRef:
-      name: proget-secrets
 
 ingress:
-  main:
+  proget:
+    className: nginx
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/rewrite-target: /
       nginx.ingress.kubernetes.io/proxy-body-size: 2048M
-    labels:
-      ingressClassName: "nginx"
     hosts:
       - host: proget.lauckserv.net
         paths:
           - path: /
             pathType: Prefix
+            service:
+              port: http
+              identifier: proget
 
 persistence:
   config:
-    accessMode: ReadWriteMany
     enabled: true
-    mountPath: /var/proget/packages
+    accessMode: ReadWriteMany
+    path: /var/proget/packages
     size: 20Gi
     storageClass: nfs-client
-    type: pvc
+    type: persistentVolumeClaim

@@ -3,9 +3,9 @@ appVersion: 22.0.15
 description: Lauckserv Proget
 name: proget-app
 type: application
-version: 0.1.0
+version: 3.7.3
 
 dependencies:
-  - name: common
-    version: 1.2.1
-    repository: https://bjw-s.github.io/helm-charts
+  - version: 3.7.3
+    repository: https://bjw-s-labs.github.io/helm-charts
+    name: common
