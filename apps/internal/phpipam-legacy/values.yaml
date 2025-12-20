@@ -1,32 +1,43 @@
-image:
-  repository: pierrecdn/phpipam
-  pullPolicy: IfNotPresent
-  tag: "1.4"
-
-strategy:
-  type: Recreate
-
-envFrom:
-  - secretRef:
-      name: phpipam-secrets
+controllers:
+  phpipam:
+    enabled: true
+    containers:
+      phpipam:
+        image:
+          repository: pierrecdn/phpipam
+          pullPolicy: IfNotPresent
+          tag: "1.4"
+        strategy:
+        type: Recreate
 
 service:
-  main:
+  phpipam:
+    primary: true
+    controller: phpipam
     ports:
       http:
+        primary: true
         port: 80
+        enabled: true
+    type: ClusterIP
 
 ingress:
-  main:
+  phpipam:
+    className: nginx
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/rewrite-target: /
-    labels:
-      ingressClassName: "nginx"
     hosts:
       - host: ipam.lauckserv.net
         paths:
           - path: /
             pathType: Prefix
+            service:
+              port: http
+              identifier: phpipam
+
+envFrom:
+  - secretRef:
+      name: phpipam-secrets
