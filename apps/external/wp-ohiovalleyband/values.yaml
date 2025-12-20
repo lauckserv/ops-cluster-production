@@ -3,6 +3,10 @@ wordpress:
   wordpressScheme: https
   allowEmptyPassword: false
 
+  image:
+    repository: bitnamilegacy/wordpress
+    tag: 6.7.1-debian-12-r9
+
   existingSecret: "wp-ohiovalleyband-usersecrets"
 
   livenessProbe:
@@ -35,3 +39,6 @@ wordpress:
     primary:
       persistence:
         storageClass: "nfs-client"
+global:
+  security:
+    allowInsecureImages: true

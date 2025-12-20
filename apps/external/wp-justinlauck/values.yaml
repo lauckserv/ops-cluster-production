@@ -3,6 +3,10 @@ wordpress:
   wordpressScheme: https
   allowEmptyPassword: false
 
+  image:
+    repository: bitnamilegacy/wordpress
+    tag: 6.7.1-debian-12-r9
+
   existingSecret: "wp-justinlauck-usersecrets"
 
   readinessProbe:
@@ -34,3 +38,7 @@ wordpress:
         initialDelaySeconds: 30
       readinessProbe:
         initialDelaySeconds: 30
+
+global:
+  security:
+    allowInsecureImages: true
