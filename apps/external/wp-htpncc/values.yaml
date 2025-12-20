@@ -53,6 +53,9 @@ wordpress:
         initialDelaySeconds: 60
       readinessProbe:
         initialDelaySeconds: 60
+    image:
+      repository: bitnamilegacy/mariadb
+      tag: 11.4.4-debian-12-r2
 
 global:
   security:
