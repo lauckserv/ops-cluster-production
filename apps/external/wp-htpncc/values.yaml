@@ -53,3 +53,6 @@ wordpress:
         initialDelaySeconds: 60
       readinessProbe:
         initialDelaySeconds: 60
+global:
+  security:
+    allowInsecureImages: true
