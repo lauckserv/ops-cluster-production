@@ -172,7 +172,7 @@ postiz:
         postgres:
           image:
             repository: postgres
-            tag: "18.1"
+            tag: "17.7"
             pullPolicy: IfNotPresent
           securityContext:
             runAsUser: 999
@@ -206,7 +206,7 @@ postiz:
       advancedMounts:
         postgres:
           postgres:
-            - path: /var/lib/postgresql
+            - path: /var/lib/postgresql/data
               readOnly: false
       retain: true
 
