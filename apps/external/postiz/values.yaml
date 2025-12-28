@@ -202,7 +202,7 @@ postiz:
       advancedMounts:
         postgres:
           postgres:
-            - path: /var/lib/postgresql
+            - path: /var/lib/postgresql/18/docker
               readOnly: false
       retain: true
 
