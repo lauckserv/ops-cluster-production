@@ -10,7 +10,7 @@ postiz:
         postiz: 
           image:
             repository: ghcr.io/gitroomhq/postiz-app
-            tag: v2.10.1
+            tag: v2.11.2
             pullPolicy: IfNotPresent
           env:
             # === Required Settings ===
@@ -202,7 +202,7 @@ postiz:
       advancedMounts:
         postgres:
           postgres:
-            - path: /var/lib/postgresq
+            - path: /var/lib/postgresql
               readOnly: false
       retain: true
 
