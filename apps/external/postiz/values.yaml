@@ -174,10 +174,6 @@ postiz:
             repository: postgres
             tag: "17.7"
             pullPolicy: IfNotPresent
-          securityContext:
-            runAsUser: 999
-            runAsGroup: 999
-            fsGroup: 999
           envFrom:
           - secretRef:
               name: postiz-secrets
