@@ -203,7 +203,7 @@ postiz:
     database:
       enabled: true
       size: 5Gi
-      storageClass: nfs-client
+      storageClass: nfs-nosquash
       accessMode: ReadWriteOnce
       advancedMounts:
         postgres:
