@@ -10,7 +10,7 @@ postiz:
         postiz: 
           image:
             repository: ghcr.io/gitroomhq/postiz-app
-            tag: v2.11.2
+            tag: v2.11.3
             pullPolicy: IfNotPresent
           env:
             # === Required Settings ===
