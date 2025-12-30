@@ -174,11 +174,6 @@ postiz:
             repository: postgres
             tag: "17.7"
             pullPolicy: IfNotPresent
-          securityContext:
-            runAsUser: 999        # postgres UID in the image
-            runAsGroup: 999
-            fsGroup: 999          # make volume group-writable to 999
-            fsGroupChangePolicy: "OnRootMismatch"   # optional, on newer clusters
           envFrom:
           - secretRef:
               name: postiz-secrets
