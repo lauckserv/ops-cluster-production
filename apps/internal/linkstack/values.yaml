@@ -10,7 +10,7 @@ linkstack:
         linkstack:
           image:
             repository: ghcr.io/linkstackorg/linkstack
-            tag: v4.8.5
+            tag: latest
             pullPolicy: IfNotPresent
           env:
             hostname: linkstack.lauckserv.net
