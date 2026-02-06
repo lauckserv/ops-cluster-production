@@ -3,7 +3,7 @@ replicaCount: 1
 
 image:
   repository: nginx
-  tag: "1.25-alpine"
+  tag: "1.29.5-alpine"
   pullPolicy: IfNotPresent
 
 nameOverride: ""
@@ -19,7 +19,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: links.lauckserv.net
+    - host: www.justinlauck.com
       paths:
         - path: /
           pathType: Prefix
