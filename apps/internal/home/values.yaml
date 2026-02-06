@@ -45,14 +45,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-# Security context for the container
-securityContext:
-  runAsNonRoot: true
-  runAsUser: 101
-  runAsGroup: 101
-  fsGroup: 101
-
-# Pod security context
-podSecurityContext:
-  fsGroup: 101
