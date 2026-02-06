@@ -21,7 +21,7 @@ wordpress:
   ingress:
     enabled: true
     ingressClassName: nginx
-    hostname: www.justinlauck.com
+    hostname: blog.justinlauck.com
     annotations: { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
 
   persistence:
