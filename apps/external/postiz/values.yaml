@@ -226,7 +226,7 @@ postiz:
           env:
           - name: POSTGRES_USER
             value: "temporal"
-          - name: POSTGRES_PWD
+          - name: POSTGRES_PASSWORD
             value: "temporal"
           - name: PGDATA
             value: /var/lib/postgresql/data/pgdata
