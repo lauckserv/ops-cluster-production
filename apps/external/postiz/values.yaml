@@ -10,7 +10,7 @@ postiz:
         postiz: 
           image:
             repository: ghcr.io/gitroomhq/postiz-app
-            tag: v2.16.0
+            tag: latest
             pullPolicy: IfNotPresent
           env:
             # === Required Settings ===
@@ -29,6 +29,7 @@ postiz:
                   key: POSTGRES_URL
             REDIS_URL: "redis://postiz-redis:6379"
             BACKEND_INTERNAL_URL: "http://localhost:3000"
+            TEMPORAL_ADDRESS: "temporal:7233"
             IS_GENERAL: "true"
             DISABLE_REGISTRATION: "true"
             
@@ -161,7 +162,7 @@ postiz:
         redis:
           image:
             repository: redis
-            tag: "8.4.0"
+            tag: "7.2"
             pullPolicy: IfNotPresent  
     
     postgres:
@@ -172,7 +173,7 @@ postiz:
         postgres:
           image:
             repository: postgres
-            tag: "17.7"
+            tag: "17-alpine"
             pullPolicy: IfNotPresent
           envFrom:
           - secretRef:
@@ -184,6 +185,98 @@ postiz:
             value: postiz
           - name: PGDATA
             value: /var/lib/postgresql/data/pgdata
+
+    # Temporal Stack
+    temporal-elasticsearch:
+      type: deployment
+      replicas: 1
+      strategy: Recreate
+      containers:
+        temporal-elasticsearch:
+          image:
+            repository: elasticsearch
+            tag: "7.17.27"
+            pullPolicy: IfNotPresent
+          env:
+            - name: cluster.routing.allocation.disk.threshold_enabled
+              value: "true"
+            - name: cluster.routing.allocation.disk.watermark.low
+              value: "512mb"
+            - name: cluster.routing.allocation.disk.watermark.high
+              value: "256mb"
+            - name: cluster.routing.allocation.disk.watermark.flood_stage
+              value: "128mb"
+            - name: discovery.type
+              value: "single-node"
+            - name: ES_JAVA_OPTS
+              value: "-Xms256m -Xmx256m"
+            - name: xpack.security.enabled
+              value: "false"
+
+    temporal-postgresql:
+      type: deployment
+      replicas: 1
+      strategy: Recreate
+      containers:
+        temporal-postgresql:
+          image:
+            repository: postgres
+            tag: "16"
+            pullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "temporal"
+            - name: POSTGRES_USER
+              value: "temporal"
+
+    temporal:
+      type: deployment
+      replicas: 1
+      strategy: Recreate
+      containers:
+        temporal:
+          image:
+            repository: temporalio/auto-setup
+            tag: "1.28.1"
+            pullPolicy: IfNotPresent
+          env:
+            - name: DB
+              value: "postgres12"
+            - name: DB_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: "temporal"
+            - name: POSTGRES_PWD
+              value: "temporal"
+            - name: POSTGRES_SEEDS
+              value: "temporal-postgresql"
+            - name: DYNAMIC_CONFIG_FILE_PATH
+              value: "config/dynamicconfig/development-sql.yaml"
+            - name: ENABLE_ES
+              value: "true"
+            - name: ES_SEEDS
+              value: "temporal-elasticsearch"
+            - name: ES_VERSION
+              value: "v7"
+            - name: TEMPORAL_NAMESPACE
+              value: "default"
+
+    temporal-ui:
+      type: deployment
+      replicas: 1
+      strategy: Recreate
+      containers:
+        temporal-ui:
+          image:
+            repository: temporalio/ui
+            tag: "2.34.0"
+            pullPolicy: IfNotPresent
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: "temporal:7233"
+            - name: TEMPORAL_CORS_ORIGINS
+              value: "http://127.0.0.1:3000"
+
   persistence:
     uploads:
       enabled: true
@@ -203,6 +296,28 @@ postiz:
       advancedMounts:
         postgres:
           postgres:
+            - path: /var/lib/postgresql/data
+              readOnly: false
+      retain: true
+    temporal-elasticsearch-data:
+      enabled: true
+      size: 1Gi
+      storageClass: nfs-client
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        temporal-elasticsearch:
+          temporal-elasticsearch:
+            - path: /usr/share/elasticsearch/data
+              readOnly: false
+      retain: true
+    temporal-postgresql-data:
+      enabled: true
+      size: 2Gi
+      storageClass: nfs-client
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        temporal-postgresql:
+          temporal-postgresql:
             - path: /var/lib/postgresql/data
               readOnly: false
       retain: true
@@ -229,6 +344,34 @@ postiz:
       ports:
         http:
           port: 6379
+
+    temporal-elasticsearch:
+      controller: temporal-elasticsearch
+      type: ClusterIP
+      ports:
+        http:
+          port: 9200
+
+    temporal-postgresql:
+      controller: temporal-postgresql
+      type: ClusterIP
+      ports:
+        http:
+          port: 5432
+
+    temporal:
+      controller: temporal
+      type: ClusterIP
+      ports:
+        http:
+          port: 7233
+
+    temporal-ui:
+      controller: temporal-ui
+      type: ClusterIP
+      ports:
+        http:
+          port: 8080
     
   ingress:
     postiz:
@@ -246,4 +389,21 @@ postiz:
               pathType: Prefix
               service:
                 identifier: postiz
+                port: http
+
+    temporal-ui:
+      enabled: true
+      className: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/proxy-body-size: 500M
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      hosts:
+        - host: postiz-temporal.lauckserv.com
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: temporal-ui
                 port: http
