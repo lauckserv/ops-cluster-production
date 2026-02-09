@@ -223,10 +223,11 @@ postiz:
             repository: postgres
             tag: "17-alpine"
             pullPolicy: IfNotPresent
-          envFrom:
-          - secretRef:
-              name: postiz-secrets
           env:
+          - name: POSTGRES_USER
+            value: "temporal"
+          - name: POSTGRES_PWD
+            value: "temporal"
           - name: PGDATA
             value: /var/lib/postgresql/data/pgdata
 
@@ -245,6 +246,10 @@ postiz:
               value: "postgres12"
             - name: DB_PORT
               value: "5432"
+            - name: POSTGRES_USER
+              value: "temporal"
+            - name: POSTGRES_PWD
+              value: "temporal"
             - name: POSTGRES_SEEDS
               value: "postiz-temporal-postgresql"
             - name: DYNAMIC_CONFIG_FILE_PATH
@@ -257,9 +262,6 @@ postiz:
               value: "v7"
             - name: TEMPORAL_NAMESPACE
               value: "default"
-          envFrom:
-          - secretRef:
-              name: postiz-secrets
 
     temporal-ui:
       type: deployment
