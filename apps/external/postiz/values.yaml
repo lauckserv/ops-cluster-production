@@ -320,17 +320,6 @@ postiz:
               readOnly: false
       retain: true
 
-    temporal-dynamic-config:
-      enabled: true
-      size: 2Gi
-      storageClass: configMap
-      accessMode: ReadOnlyMany
-      advancedMounts:
-        temporal:
-          temporal:
-            - path: /etc/temporal/config/dynamicconfig
-              readOnly: true
-
   service:
     postiz:
       enabled: true
