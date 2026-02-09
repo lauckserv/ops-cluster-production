@@ -223,11 +223,9 @@ postiz:
             repository: postgres
             tag: "16"
             pullPolicy: IfNotPresent
-          env:
-            - name: POSTGRES_PASSWORD
-              value: "temporal"
-            - name: POSTGRES_USER
-              value: "temporal"
+          envFrom:
+          - secretRef:
+              name: postiz-secrets
 
     temporal:
       type: deployment
@@ -244,10 +242,6 @@ postiz:
               value: "postgres12"
             - name: DB_PORT
               value: "5432"
-            - name: POSTGRES_USER
-              value: "temporal"
-            - name: POSTGRES_PWD
-              value: "temporal"
             - name: POSTGRES_SEEDS
               value: "temporal-postgresql"
             - name: DYNAMIC_CONFIG_FILE_PATH
@@ -260,6 +254,9 @@ postiz:
               value: "v7"
             - name: TEMPORAL_NAMESPACE
               value: "default"
+          envFrom:
+          - secretRef:
+              name: postiz-secrets
 
     temporal-ui:
       type: deployment
@@ -273,7 +270,7 @@ postiz:
             pullPolicy: IfNotPresent
           env:
             - name: TEMPORAL_ADDRESS
-              value: "temporal:7233"
+              value: "postiz-temporal:7233"
             - name: TEMPORAL_CORS_ORIGINS
               value: "http://127.0.0.1:3000"
 
