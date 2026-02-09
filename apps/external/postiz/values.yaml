@@ -253,6 +253,8 @@ postiz:
               value: "postiz-temporal-elasticsearch"
             - name: ES_VERSION
               value: "v7"
+            - name: "cassandra.enabled"
+              value: "false"
             - name: TEMPORAL_NAMESPACE
               value: "default"
           envFrom:
