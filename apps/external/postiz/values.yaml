@@ -246,13 +246,13 @@ postiz:
             - name: DB_PORT
               value: "5432"
             - name: POSTGRES_SEEDS
-              value: "temporal-postgresql"
+              value: "postiz-temporal-postgresql"
             - name: DYNAMIC_CONFIG_FILE_PATH
               value: "config/dynamicconfig/development-sql.yaml"
             - name: ENABLE_ES
               value: "true"
             - name: ES_SEEDS
-              value: "temporal-elasticsearch"
+              value: "postiz-temporal-elasticsearch"
             - name: ES_VERSION
               value: "v7"
             - name: TEMPORAL_NAMESPACE
