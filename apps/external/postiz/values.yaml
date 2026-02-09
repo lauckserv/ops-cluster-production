@@ -241,6 +241,8 @@ postiz:
             tag: "1.28.1"
             pullPolicy: IfNotPresent
           env:
+            - name: DB
+              value: "postgres12"
             - name: DB_PORT
               value: "5432"
             - name: POSTGRES_SEEDS
