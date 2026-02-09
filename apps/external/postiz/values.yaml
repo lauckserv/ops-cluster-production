@@ -312,17 +312,6 @@ postiz:
             - path: /usr/share/elasticsearch/data
               readOnly: false
       retain: true
-    temporal-postgresql-data:
-      enabled: true
-      size: 2Gi
-      storageClass: nfs-nosquash
-      accessMode: ReadWriteOnce
-      advancedMounts:
-        temporal-postgresql:
-          temporal-postgresql:
-            - path: /var/lib/postgresql/data
-              readOnly: false
-      retain: true
 
   service:
     postiz:
