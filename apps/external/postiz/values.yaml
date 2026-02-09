@@ -253,13 +253,20 @@ postiz:
               value: "postiz-temporal-elasticsearch"
             - name: ES_VERSION
               value: "v7"
-            - name: "cassandra.enabled"
-              value: "false"
             - name: TEMPORAL_NAMESPACE
               value: "default"
           envFrom:
           - secretRef:
               name: postiz-secrets
+      volumes:
+        dynamic-config:
+          type: configMap
+          name: temporal-dynamic-config
+          advancedMounts:
+            temporal:
+              temporal:
+                - path: /etc/temporal/config/dynamicconfig
+                  readOnly: true
 
     temporal-ui:
       type: deployment
