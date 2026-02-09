@@ -313,7 +313,7 @@ postiz:
     temporal-postgresql-data:
       enabled: true
       size: 2Gi
-      storageClass: nfs-client
+      storageClass: nfs-nosquash
       accessMode: ReadWriteOnce
       advancedMounts:
         temporal-postgresql:
