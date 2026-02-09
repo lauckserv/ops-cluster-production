@@ -3,7 +3,7 @@ name: postiz
 description: Postiz is the ultimate AI social media scheduling tool. Schedule posts, measure analytics, collaborate with team members, and automate your social media management. Supports X (Twitter), LinkedIn, Instagram, Facebook, TikTok, YouTube, Reddit, Discord, Mastodon, and many more platforms.
 type: application
 version: 4.5.0
-appVersion: 2.10.1
+appVersion: 2.16.0
 dependencies:
   - name: app-template
     version: 4.5.0
