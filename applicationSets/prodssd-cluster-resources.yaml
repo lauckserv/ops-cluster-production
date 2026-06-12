@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prodssd-cluster-resources
+  labels:
+    lauckserv.io/environment: prodssd
+    lauckserv.io/category: resources
+spec:
+  destination:
+    server: https://192.168.225.12:6443
+    namespace: cluster-tools
+  project: cluster-tools
+  source:
+    path: cluster-resources
+    repoURL: https://github.com/lauckserv/ops-cluster-production
+    targetRevision: HEAD
+    directory:
+      recurse: true
+      jsonnet: {}

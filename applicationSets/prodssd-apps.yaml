@@ -1,9 +1,9 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: production-apps
+  name: prodssd-apps
   labels:
-    lauckserv.io/environment: production
+    lauckserv.io/environment: prodssd
     lauckserv.io/category: app-set
 spec:
   generators:
@@ -14,9 +14,9 @@ spec:
           - path: apps/**/*
   template:
     metadata:
-      name: "{{path.basename}}"
+      name: "prodssd-{{path.basename}}"
       labels:
-        lauckserv.io/environment: production
+        lauckserv.io/environment: prodssd
         lauckserv.io/category: app
     spec:
       project: "{{ path[1] }}-apps"
@@ -28,7 +28,7 @@ spec:
           valueFiles:
             - values.yaml
       destination:
-        server: https://rancher.lauckserv.net/k8s/clusters/c-m-d25gnqct
+        server: https://192.168.225.12:6443
         namespace: "{{ path[2] }}"
       ignoreDifferences:
         - group: "*"
