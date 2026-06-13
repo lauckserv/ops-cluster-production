@@ -202,8 +202,7 @@ wordpress:
       annotations:
         kubernetes.io/ingress.class: nginx
         nginx.ingress.kubernetes.io/proxy-body-size: 50M
-        nginx.ingress.kubernetes.io/configuration-snippet: |
-          proxy_set_header X-Forwarded-Proto "https";
+        nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
       hosts:
         - host: recruiting.moonareafootball.com
           paths:
