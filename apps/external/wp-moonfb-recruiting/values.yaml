@@ -46,7 +46,15 @@ wordpress:
                   key: mysql-secret
 
             WORDPRESS_CONFIG_EXTRA: |
-              $_SERVER['HTTPS'] = 'on';
+              define('FORCE_SSL_ADMIN', false);
+              define('WP_HOME', 'https://recruiting.moonareafootball.com');
+              define('WP_SITEURL', 'https://recruiting.moonareafootball.com');
+              if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+                $_SERVER['HTTPS'] = 'on';
+              }
+              if (!isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+                $_SERVER['HTTPS'] = 'on';
+              }
 
             WORDPRESS_TABLE_PREFIX: wp_
             WORDPRESS_DEBUG: "0"
