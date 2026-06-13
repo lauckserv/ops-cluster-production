@@ -8,3 +8,4 @@ data:
   forwarded-for-header: "X-Forwarded-For"
   compute-full-forwarded-for: "true"
   allow-snippet-annotations: "true"
+  annotations-risk-level: "Critical"
