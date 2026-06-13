@@ -1,0 +1,254 @@
+wordpress:
+  enabled: true
+  global: 
+    fullnameOverride: wordpress
+  controllers:
+    wordpress:
+      enabled: true
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      pod:
+        securityContext:
+          fsGroup: 33
+          fsGroupChangePolicy: "OnRootMismatch"
+        dnsPolicy: ClusterFirst
+      initContainers:
+        fix-permissions:
+          image:
+            repository: busybox
+            tag: latest
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/www/html/wp-content
+              chown -R 33:33 /var/www/html/wp-content || true
+              chmod -R 755 /var/www/html/wp-content || true
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+      containers:
+        wordpress:
+          image:
+            repository: wordpress
+            tag: 6.9.4
+            pullPolicy: IfNotPresent
+          env:
+            # WordPress Configuration
+            WORDPRESS_DB_HOST: wordpress-mysql
+            WORDPRESS_DB_NAME: wordpress
+            WORDPRESS_DB_USER: wordpress
+            WORDPRESS_DB_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: wp-mysql-secret
+                  key: mysql-secret
+
+            WORDPRESS_CONFIG_EXTRA: |
+              $_SERVER['HTTPS'] = 'on';
+
+            WORDPRESS_TABLE_PREFIX: wp_
+            WORDPRESS_DEBUG: "0"
+            
+            # Additional PHP Configuration
+            PHP_MEMORY_LIMIT: 512M
+            PHP_UPLOAD_MAX_FILESIZE: 64M
+            PHP_POST_MAX_SIZE: 64M
+            
+            # DNS Options (helps with service discovery)
+            WORDPRESS_DB_CHARSET: utf8
+            WORDPRESS_DB_COLLATE: ""
+            
+          probes:
+            liveness:
+              enabled: true
+              type: TCP
+              spec:
+                initialDelaySeconds: 120
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+            readiness:
+              enabled: true
+              type: HTTP
+              spec:
+                httpHeaders:
+                  - name: X-Forwarded-Proto
+                    value: https
+                path: /wp-login.php
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+          
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+              
+          securityContext:
+            runAsUser: 33  # www-data user
+            runAsGroup: 33
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+    mysql:
+      enabled: true
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        mysql:
+          image:
+            repository: mariadb
+            tag: "12.1.2"
+            pullPolicy: IfNotPresent
+          env:
+            MYSQL_ROOT_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: wp-mysql-secret
+                  key: mysql-secret
+            MYSQL_DATABASE: wordpress
+            MYSQL_USER: wordpress
+            MYSQL_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: wp-mysql-secret
+                  key: mysql-secret
+            # MariaDB specific settings
+            MARIADB_AUTO_UPGRADE: "1"
+            MARIADB_DISABLE_UPGRADE_BACKUP: "1"
+          
+          probes:
+            liveness:
+              enabled: false
+              spec:
+                exec:
+                  command:
+                    - mariadb-admin
+                    - ping
+                    - -h
+                    - localhost
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 3
+            readiness:
+              enabled: false
+              spec:
+                exec:
+                  command:
+                    - mariadb-admin
+                    - ping
+                    - -h
+                    - localhost
+                    - -e
+                    - SELECT 1
+                initialDelaySeconds: 5
+                periodSeconds: 30
+                timeoutSeconds: 5
+          
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+              
+          securityContext:
+            runAsUser: 999  # mysql user
+            runAsGroup: 999
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+
+  service:
+    wordpress:
+      controller: wordpress
+      ports:
+        http:
+          port: 80
+          targetPort: 80
+          protocol: TCP
+    mysql:
+      controller: mysql
+      ports:
+        mysql:
+          port: 3306
+          targetPort: 3306
+          protocol: TCP
+
+  ingress:
+    wordpress:
+      enabled: true
+      className: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/proxy-body-size: 50M
+      hosts:
+        - host: recruiting.moonareafootball.com
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: wordpress
+                port: http
+
+  persistence:
+    wordpress-data:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 10Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        wordpress:
+          wordpress:
+            - path: /var/www/html/wp-content
+          fix-permissions:
+            - path: /var/www/html/wp-content
+      retain: true
+
+    php-config:
+      enabled: true
+      type: configMap
+      name: wordpress
+      advancedMounts:
+        wordpress:
+          wordpress:
+            - path: /usr/local/etc/php/conf.d/custom.ini
+              subPath: php.ini
+
+    mysql-data:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 5Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        mysql:
+          mysql:
+            - path: /var/lib/mysql
+      retain: true
+
+  # ConfigMaps for additional configuration
+  configMaps:
+    php-config:
+      enabled: true
+      data:
+        php.ini: |
+          memory_limit = 512M
+          upload_max_filesize = 64M
+          post_max_size = 64M
+          max_execution_time = 300
+          max_input_vars = 3000
+
