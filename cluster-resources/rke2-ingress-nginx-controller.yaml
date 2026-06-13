@@ -7,3 +7,4 @@ data:
   use-forwarded-headers: "true"
   forwarded-for-header: "X-Forwarded-For"
   compute-full-forwarded-for: "true"
+  allow-snippet-annotations: "true"
