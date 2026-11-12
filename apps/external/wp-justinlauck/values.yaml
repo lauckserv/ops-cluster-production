@@ -21,13 +21,7 @@ wordpress:
             - sh
             - -c
             - |
-              set -e
               mkdir -p /var/www/html/wp-content
-              # one-time copy from the old Bitnami volume (wp-justinlauck-wordpress); remove with the /old mount after migrating
-              if [ -d /old/wordpress/wp-content ] && [ ! -e /var/www/html/wp-content/.migrated ]; then
-                cp -a /old/wordpress/wp-content/. /var/www/html/wp-content/
-                touch /var/www/html/wp-content/.migrated
-              fi
               chown -R 33:33 /var/www/html/wp-content
           securityContext:
             runAsUser: 0
@@ -217,17 +211,6 @@ wordpress:
           fix-permissions:
             - path: /var/www/html/wp-content
       retain: true
-
-    # old Bitnami volume, only read by the one-time migration; remove once migrated
-    wordpress-old:
-      enabled: true
-      type: persistentVolumeClaim
-      existingClaim: wp-justinlauck-wordpress
-      advancedMounts:
-        wordpress:
-          fix-permissions:
-            - path: /old
-              readOnly: true
 
     php-config:
       enabled: true
