@@ -1,48 +1,273 @@
 wordpress:
-  wordpressUsername: admin
-  wordpressScheme: https
-  allowEmptyPassword: false
+  enabled: true
+  global:
+    fullnameOverride: wordpress
+  controllers:
+    wordpress:
+      enabled: true
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      pod:
+        securityContext:
+          fsGroup: 33
+          fsGroupChangePolicy: "OnRootMismatch"
+      initContainers:
+        fix-permissions:
+          image:
+            repository: busybox
+            tag: 1.37.0
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/www/html/wp-content
+              # one-time copy from the old Bitnami volume (wp-ohiovalleyband-wordpress); remove with the /old mount after migrating
+              if [ ! -e /var/www/html/wp-content/.migrated ]; then
+                src=
+                for d in /old/wordpress/wp-content /old/wp-content; do
+                  [ -d "$d" ] && src=$d && break
+                done
+                if [ -z "$src" ]; then
+                  echo "ERROR: no wp-content found on the old volume (/old):"
+                  find /old -maxdepth 3 | head -50
+                  exit 1
+                fi
+                echo "copying $src"
+                cp -a "$src"/. /var/www/html/wp-content/
+                touch /var/www/html/wp-content/.migrated
+              fi
+              chown -R 33:33 /var/www/html/wp-content
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+      containers:
+        wordpress:
+          image:
+            repository: wordpress
+            tag: 7.1.4
+            pullPolicy: IfNotPresent
+          env:
+            WORDPRESS_DB_HOST: wordpress-mysql
+            WORDPRESS_DB_NAME: wordpress
+            WORDPRESS_DB_USER: wordpress
+            WORDPRESS_DB_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: wp-mysql-secret
+                  key: mysql-password
 
-  image:
-    repository: bitnamilegacy/wordpress
-    tag: 6.7.1-debian-12-r9
+            WORDPRESS_CONFIG_EXTRA: |
+              define('WP_HOME', 'https://www.ohiovalleyband.org');
+              define('WP_SITEURL', 'https://www.ohiovalleyband.org');
+              define('WP_AUTO_UPDATE_CORE', false);
+              define('DISABLE_WP_CRON', true);
+              $_SERVER['HTTPS'] = 'on';
 
-  existingSecret: "wp-ohiovalleyband-usersecrets"
+            # must match the table prefix of the imported Bitnami database
+            WORDPRESS_TABLE_PREFIX: wp_
+            WORDPRESS_DEBUG: "0"
 
-  livenessProbe:
-    httpGet:
-      httpHeaders:
-        - name: X-Forwarded-Proto
-          value: https
-  readinessProbe:
-    httpGet:
-      httpHeaders:
-        - name: X-Forwarded-Proto
-          value: https
+          # auth keys and salts (wp-salts, from Vault)
+          envFrom:
+            - secretRef:
+                name: wp-salts
+
+          probes:
+            liveness:
+              enabled: true
+              type: TCP
+              spec:
+                initialDelaySeconds: 120
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+            readiness:
+              enabled: true
+              type: HTTP
+              # static file served by Apache; a PHP path returns 503 while WordPress is in maintenance mode (theme/plugin updates)
+              path: /wp-includes/images/blank.gif
+              spec:
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+
+          securityContext:
+            runAsUser: 33  # www-data user
+            runAsGroup: 33
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+    mysql:
+      enabled: true
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        mysql:
+          image:
+            repository: mariadb
+            tag: "11.8"
+            pullPolicy: IfNotPresent
+          env:
+            MYSQL_ROOT_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: wp-mysql-secret
+                  key: mysql-root-password
+            MYSQL_DATABASE: wordpress
+            MYSQL_USER: wordpress
+            MYSQL_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: wp-mysql-secret
+                  key: mysql-password
+            # MariaDB specific settings
+            MARIADB_AUTO_UPGRADE: "1"
+            MARIADB_DISABLE_UPGRADE_BACKUP: "1"
+
+          probes:
+            startup:
+              enabled: true
+              type: TCP
+              spec:
+                periodSeconds: 10
+                failureThreshold: 30
+            liveness:
+              enabled: true
+              custom: true
+              spec:
+                exec:
+                  command:
+                    - mariadb-admin
+                    - ping
+                    - -h
+                    - localhost
+                periodSeconds: 20
+                timeoutSeconds: 5
+                failureThreshold: 3
+            readiness:
+              enabled: true
+              type: TCP
+              spec:
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
+          securityContext:
+            runAsUser: 999  # mysql user
+            runAsGroup: 999
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+
   service:
-    type: ClusterIP
-    
+    wordpress:
+      controller: wordpress
+      ports:
+        http:
+          port: 80
+          targetPort: 80
+          protocol: TCP
+    mysql:
+      controller: mysql
+      ports:
+        mysql:
+          port: 3306
+          targetPort: 3306
+          protocol: TCP
+
   ingress:
-    enabled: true
-    ingressClassName: nginx
-    hostname: www.ohiovalleyband.org
-    annotations:
-      { nginx.ingress.kubernetes.io/proxy-body-size: 50M }
+    wordpress:
+      enabled: true
+      className: nginx
+      annotations:
+        nginx.ingress.kubernetes.io/proxy-body-size: 50M
+      hosts:
+        - host: www.ohiovalleyband.org
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: wordpress
+                port: http
 
   persistence:
-    enabled: true
-    storageClass: "nfs-client"
+    wordpress-data:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 10Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        wordpress:
+          wordpress:
+            - path: /var/www/html/wp-content
+          fix-permissions:
+            - path: /var/www/html/wp-content
+      retain: true
 
-  mariadb:
-    auth:
-      existingSecret: "wp-ohiovalleyband-dbsecrets"
-    primary:
-      persistence:
-        storageClass: "nfs-client"
-    image:
-      repository: bitnamilegacy/mariadb
-      tag: 10.6.11-debian-11-r22
-      
-global:
-  security:
-    allowInsecureImages: true
+    # old Bitnami volume, only read by the one-time migration; remove once migrated
+    wordpress-old:
+      enabled: true
+      type: persistentVolumeClaim
+      existingClaim: wp-ohiovalleyband-wordpress
+      advancedMounts:
+        wordpress:
+          fix-permissions:
+            - path: /old
+              readOnly: true
+
+    php-config:
+      enabled: true
+      type: configMap
+      name: wordpress
+      advancedMounts:
+        wordpress:
+          wordpress:
+            - path: /usr/local/etc/php/conf.d/custom.ini
+              subPath: php.ini
+
+    mysql-data:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 8Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        mysql:
+          mysql:
+            - path: /var/lib/mysql
+      retain: true
+
+  # ConfigMaps for additional configuration
+  configMaps:
+    php-config:
+      enabled: true
+      data:
+        php.ini: |
+          memory_limit = 512M
+          upload_max_filesize = 64M
+          post_max_size = 64M
+          max_execution_time = 300
+          max_input_vars = 3000

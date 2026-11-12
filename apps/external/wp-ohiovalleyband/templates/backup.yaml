@@ -1,0 +1,61 @@
+# Nightly database dump to a separate volume, keeping 14 days.
+# The wp-content volume is not backed up here (ReadWriteOnce); snapshot the NFS share for that.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wordpress-backups
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-nosquash
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: wordpress-db-backup
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: dump
+              image: mariadb:12.1.2
+              command:
+                - bash
+                - -c
+                - |
+                  set -euo pipefail
+                  out=/backup/wordpress-$(date +%F-%H%M).sql.gz
+                  mariadb-dump --single-transaction --routines --events --no-tablespaces \
+                    -h wordpress-mysql -u wordpress wordpress | gzip > "$out.tmp"
+                  mv "$out.tmp" "$out"
+                  find /backup -name 'wordpress-*.sql.gz' -mtime +14 -delete
+                  ls -lh /backup
+              env:
+                - name: MYSQL_PWD
+                  valueFrom:
+                    secretKeyRef:
+                      name: wp-mysql-secret
+                      key: mysql-password
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+              volumeMounts:
+                - name: backups
+                  mountPath: /backup
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: wordpress-backups
