@@ -22,21 +22,6 @@ wordpress:
             - -c
             - |
               mkdir -p /var/www/html/wp-content
-              # one-time copy from the old Bitnami volume (wp-ohiovalleyband-wordpress); remove with the /old mount after migrating
-              if [ ! -e /var/www/html/wp-content/.migrated ]; then
-                src=
-                for d in /old/wordpress/wp-content /old/wp-content; do
-                  [ -d "$d" ] && src=$d && break
-                done
-                if [ -z "$src" ]; then
-                  echo "ERROR: no wp-content found on the old volume (/old):"
-                  find /old -maxdepth 3 | head -50
-                  exit 1
-                fi
-                echo "copying $src"
-                cp -a "$src"/. /var/www/html/wp-content/
-                touch /var/www/html/wp-content/.migrated
-              fi
               chown -R 33:33 /var/www/html/wp-content
           securityContext:
             runAsUser: 0
@@ -226,17 +211,6 @@ wordpress:
           fix-permissions:
             - path: /var/www/html/wp-content
       retain: true
-
-    # old Bitnami volume, only read by the one-time migration; remove once migrated
-    wordpress-old:
-      enabled: true
-      type: persistentVolumeClaim
-      existingClaim: wp-ohiovalleyband-wordpress
-      advancedMounts:
-        wordpress:
-          fix-permissions:
-            - path: /old
-              readOnly: true
 
     php-config:
       enabled: true
