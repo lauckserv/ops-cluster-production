@@ -188,6 +188,8 @@ wordpress:
       className: nginx
       annotations:
         nginx.ingress.kubernetes.io/proxy-body-size: 50M
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
       hosts:
         - host: blog.justinlauck.com
           paths:
