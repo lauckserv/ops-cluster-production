@@ -180,7 +180,9 @@ wordpress:
       advancedMounts:
         wordpress:
           wordpress:
-            - path: /var/www/html
+            # only persist wp-content so core comes from the image; subPath keeps existing data
+            - path: /var/www/html/wp-content
+              subPath: wp-content
       retain: true
 
     mysql-data:
