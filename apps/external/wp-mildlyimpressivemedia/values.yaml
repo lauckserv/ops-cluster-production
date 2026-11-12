@@ -8,6 +8,21 @@ wordpress:
       type: deployment
       strategy: Recreate
       replicas: 1
+      initContainers:
+        fix-permissions:
+          image:
+            repository: busybox
+            tag: latest
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /var/www/html/wp-content
+              chown -R 33:33 /var/www/html/wp-content || true
+              chmod -R u+rwX /var/www/html/wp-content || true
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
       containers:
         wordpress:
           image:
@@ -181,6 +196,9 @@ wordpress:
         wordpress:
           wordpress:
             # only persist wp-content so core comes from the image; subPath keeps existing data
+            - path: /var/www/html/wp-content
+              subPath: wp-content
+          fix-permissions:
             - path: /var/www/html/wp-content
               subPath: wp-content
       retain: true
