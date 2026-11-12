@@ -1,0 +1,35 @@
+# WP-Cron is disabled in wp-config (DISABLE_WP_CRON); this triggers it on a schedule instead.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: wordpress-cron
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: cron
+              image: curlimages/curl:8.11.1
+              args:
+                - -fsS
+                - --max-time
+                - "120"
+                - -H
+                - "Host: blog.justinlauck.com"
+                - -o
+                - /dev/null
+                - http://wordpress/wp-cron.php
+              securityContext:
+                allowPrivilegeEscalation: false
+                runAsNonRoot: true
+                runAsUser: 1000
+                capabilities:
+                  drop:
+                    - ALL
