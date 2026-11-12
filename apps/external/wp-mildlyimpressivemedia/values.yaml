@@ -8,29 +8,6 @@ wordpress:
       type: deployment
       strategy: Recreate
       replicas: 1
-      initContainers:
-        # one-time copy from the old nfs-client PVC (wordpress-data) to the nfs-nosquash PVC (wordpress-content)
-        migrate-wp-content:
-          image:
-            repository: busybox
-            tag: latest
-          command:
-            - sh
-            - -c
-            - |
-              if [ ! -e /new/.migrated ]; then
-                src=/old/wp-content
-                [ -d /old/wp-content-v2 ] && src=/old/wp-content-v2
-                if [ -d "$src" ]; then
-                  cp -a "$src"/. /new/
-                fi
-                chown -R 33:33 /new
-                touch /new/.migrated
-                chown 33:33 /new/.migrated
-              fi
-          securityContext:
-            runAsUser: 0
-            runAsGroup: 0
       containers:
         wordpress:
           image:
@@ -194,20 +171,6 @@ wordpress:
                 port: http
 
   persistence:
-    # legacy nfs-client volume; kept only as the source for the one-time migration, remove once verified
-    wordpress-data:
-      enabled: true
-      type: persistentVolumeClaim
-      size: 10Gi
-      storageClass: nfs-client
-      accessMode: ReadWriteOnce
-      advancedMounts:
-        wordpress:
-          migrate-wp-content:
-            - path: /old
-              readOnly: true
-      retain: true
-
     wordpress-content:
       enabled: true
       type: persistentVolumeClaim
@@ -219,8 +182,6 @@ wordpress:
           # only persist wp-content so core comes from the image
           wordpress:
             - path: /var/www/html/wp-content
-          migrate-wp-content:
-            - path: /new
       retain: true
 
     mysql-data:
