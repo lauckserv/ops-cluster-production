@@ -12,7 +12,6 @@ wordpress:
         securityContext:
           fsGroup: 33
           fsGroupChangePolicy: "OnRootMismatch"
-        dnsPolicy: ClusterFirst
       initContainers:
         fix-permissions:
           image:
@@ -23,8 +22,7 @@ wordpress:
             - -c
             - |
               mkdir -p /var/www/html/wp-content
-              chown -R 33:33 /var/www/html/wp-content || true
-              chmod -R 755 /var/www/html/wp-content || true
+              chown -R 33:33 /var/www/html/wp-content
           securityContext:
             runAsUser: 0
             runAsGroup: 0
@@ -55,11 +53,7 @@ wordpress:
             PHP_MEMORY_LIMIT: 512M
             PHP_UPLOAD_MAX_FILESIZE: 64M
             PHP_POST_MAX_SIZE: 64M
-            
-            # DNS Options (helps with service discovery)
-            WORDPRESS_DB_CHARSET: utf8
-            WORDPRESS_DB_COLLATE: ""
-            
+
           probes:
             liveness:
               enabled: true
@@ -72,11 +66,9 @@ wordpress:
             readiness:
               enabled: true
               type: HTTP
+              # static file served by Apache; a PHP path returns 503 while WordPress is in maintenance mode (theme/plugin updates)
+              path: /wp-includes/images/blank.gif
               spec:
-                httpHeaders:
-                  - name: X-Forwarded-Proto
-                    value: https
-                path: /wp-login.php
                 initialDelaySeconds: 30
                 periodSeconds: 10
                 timeoutSeconds: 5
@@ -87,7 +79,7 @@ wordpress:
               cpu: 100m
               memory: 512Mi
             limits:
-              cpu: 500m
+              cpu: 1000m
               memory: 1024Mi
               
           securityContext:
@@ -131,31 +123,8 @@ wordpress:
           probes:
             liveness:
               enabled: false
-              spec:
-                exec:
-                  command:
-                    - mariadb-admin
-                    - ping
-                    - -h
-                    - localhost
-                initialDelaySeconds: 30
-                periodSeconds: 10
-                timeoutSeconds: 5
-                failureThreshold: 3
             readiness:
               enabled: false
-              spec:
-                exec:
-                  command:
-                    - mariadb-admin
-                    - ping
-                    - -h
-                    - localhost
-                    - -e
-                    - SELECT 1
-                initialDelaySeconds: 5
-                periodSeconds: 30
-                timeoutSeconds: 5
           
           resources:
             requests:
@@ -192,7 +161,6 @@ wordpress:
       enabled: true
       className: nginx
       annotations:
-        kubernetes.io/ingress.class: nginx
         nginx.ingress.kubernetes.io/proxy-body-size: 50M
       hosts:
         - host: recruiting.moonareafootball.com
