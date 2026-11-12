@@ -1,0 +1,540 @@
+postiz:
+  enabled: true
+  global:
+    fullnameOverride: postiz
+
+  defaultPodOptions:
+    # Stop Kubernetes from injecting <SERVICE>_PORT=tcp://... env vars into every
+    # pod. Those collide with variables like POSTGRES_PORT / TEMPORAL_* that the
+    # postgres and temporal images read.
+    enableServiceLinks: false
+
+  controllers:
+    # ---------------------------------------------------------------------------
+    # Postiz app (frontend + backend + workers, served by Caddy on :5000)
+    # ---------------------------------------------------------------------------
+    postiz:
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        postiz:
+          image:
+            repository: ghcr.io/gitroomhq/postiz-app
+            tag: latest
+            pullPolicy: Always
+          env:
+            # === Required Settings ===
+            MAIN_URL: "https://postiz.lauckserv.com"
+            FRONTEND_URL: "https://postiz.lauckserv.com"
+            NEXT_PUBLIC_BACKEND_URL: "https://postiz.lauckserv.com/api"
+            JWT_SECRET:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: jwt-secret
+            DATABASE_URL:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: POSTGRES_URL
+            REDIS_URL: "redis://postiz-redis:6379"
+            BACKEND_INTERNAL_URL: "http://localhost:3000"
+            TEMPORAL_ADDRESS: "postiz-temporal:7233"
+            IS_GENERAL: "true"
+            DISABLE_REGISTRATION: "true"
+            RUN_CRON: "true"
+            TZ: America/New_York
+
+            # === Storage Settings ===
+            STORAGE_PROVIDER: "local"
+            UPLOAD_DIRECTORY: "/uploads"
+            NEXT_PUBLIC_UPLOAD_DIRECTORY: "/uploads"
+
+            # === Social Media API Settings ===
+            FACEBOOK_APP_ID:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: FACEBOOK_APP_ID
+            FACEBOOK_APP_SECRET:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: FACEBOOK_APP_SECRET
+            X_API_KEY: ""
+            X_API_SECRET: ""
+            LINKEDIN_CLIENT_ID: ""
+            LINKEDIN_CLIENT_SECRET: ""
+            REDDIT_CLIENT_ID: ""
+            REDDIT_CLIENT_SECRET: ""
+            GITHUB_CLIENT_ID: ""
+            GITHUB_CLIENT_SECRET: ""
+            THREADS_APP_ID: ""
+            THREADS_APP_SECRET: ""
+            YOUTUBE_CLIENT_ID: ""
+            YOUTUBE_CLIENT_SECRET: ""
+            TIKTOK_CLIENT_ID: ""
+            TIKTOK_CLIENT_SECRET: ""
+            PINTEREST_CLIENT_ID: ""
+            PINTEREST_CLIENT_SECRET: ""
+            DISCORD_CLIENT_ID: ""
+            DISCORD_CLIENT_SECRET: ""
+            DISCORD_BOT_TOKEN_ID: ""
+            SLACK_ID: ""
+            SLACK_SECRET: ""
+            SLACK_SIGNING_SECRET: ""
+            MASTODON_URL: "https://mastodon.social"
+            MASTODON_CLIENT_ID: ""
+            MASTODON_CLIENT_SECRET: ""
+
+            # === Generic OAuth (Microsoft Entra) ===
+            POSTIZ_GENERIC_OAUTH: "true"
+            NEXT_PUBLIC_POSTIZ_OAUTH_DISPLAY_NAME: "Microsoft Entra"
+            NEXT_PUBLIC_POSTIZ_OAUTH_LOGO_URL: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/master/png/microsoft.png"
+            POSTIZ_OAUTH_URL:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: ENTRA_OAUTH_URL
+            POSTIZ_OAUTH_AUTH_URL:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: ENTRA_OAUTH_AUTH_URL
+            POSTIZ_OAUTH_TOKEN_URL:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: ENTRA_OAUTH_TOKEN_URL
+            POSTIZ_OAUTH_USERINFO_URL:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: ENTRA_OAUTH_USERINFO_URL
+            POSTIZ_OAUTH_CLIENT_ID:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: ENTRA_OAUTH_CLIENT_ID
+            POSTIZ_OAUTH_CLIENT_SECRET:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: ENTRA_OAUTH_CLIENT_SECRET
+            # POSTIZ_OAUTH_SCOPE: "openid profile email"
+
+            # === Misc Settings ===
+            API_LIMIT: "30"
+            NX_ADD_PLUGINS: "false"
+          probes:
+            startup:
+              enabled: true
+              type: TCP
+              spec:
+                initialDelaySeconds: 10
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 30   # up to ~5 min for first boot / migrations
+            liveness:
+              enabled: true
+              type: TCP
+              spec:
+                periodSeconds: 30
+                timeoutSeconds: 10
+                failureThreshold: 5
+            readiness:
+              enabled: true
+              type: TCP
+              spec:
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 3
+
+    # ---------------------------------------------------------------------------
+    # Postiz database + cache
+    # ---------------------------------------------------------------------------
+    postgres:
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        postgres:
+          image:
+            repository: postgres
+            tag: "17-alpine"
+            pullPolicy: IfNotPresent
+          env:
+            POSTGRES_DB: postiz
+            PGDATA: /var/lib/postgresql/data/pgdata
+            POSTGRES_USER:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: POSTGRES_USER
+            POSTGRES_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: postiz-secrets
+                  key: POSTGRES_PASSWORD
+          probes:
+            liveness: &pgprobe
+              enabled: true
+              custom: true
+              spec:
+                exec:
+                  command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+                initialDelaySeconds: 10
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+            readiness: *pgprobe
+
+    redis:
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        redis:
+          image:
+            repository: redis
+            tag: "7.2"
+            pullPolicy: IfNotPresent
+          probes:
+            liveness: &redisprobe
+              enabled: true
+              custom: true
+              spec:
+                exec:
+                  command: ["sh", "-c", "redis-cli ping | grep -q PONG"]
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 5
+            readiness: *redisprobe
+
+    # ---------------------------------------------------------------------------
+    # Temporal stack (Postiz uses Temporal for scheduling/workflows)
+    # ---------------------------------------------------------------------------
+    temporal-elasticsearch:
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      pod:
+        securityContext:
+          fsGroup: 1000
+          fsGroupChangePolicy: OnRootMismatch
+      containers:
+        temporal-elasticsearch:
+          image:
+            repository: elasticsearch
+            tag: "7.17.27"
+            pullPolicy: IfNotPresent
+          env:
+            cluster.routing.allocation.disk.threshold_enabled: "true"
+            cluster.routing.allocation.disk.watermark.low: "512mb"
+            cluster.routing.allocation.disk.watermark.high: "256mb"
+            cluster.routing.allocation.disk.watermark.flood_stage: "128mb"
+            discovery.type: "single-node"
+            ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+            xpack.security.enabled: "false"
+          probes:
+            startup:
+              enabled: true
+              custom: true
+              spec:
+                httpGet:
+                  path: /_cluster/health?local=true
+                  port: 9200
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 30
+            liveness:
+              enabled: true
+              type: TCP
+              port: 9200
+            readiness:
+              enabled: true
+              custom: true
+              spec:
+                httpGet:
+                  path: /_cluster/health?local=true
+                  port: 9200
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 3
+
+    temporal-postgresql:
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        temporal-postgresql:
+          image:
+            repository: postgres
+            tag: "16-alpine"
+            pullPolicy: IfNotPresent
+          env:
+            # Internal-only (ClusterIP), matches upstream Postiz compose defaults.
+            POSTGRES_USER: temporal
+            POSTGRES_PASSWORD: temporal
+            PGDATA: /var/lib/postgresql/data/pgdata
+          probes:
+            liveness: &temporalpgprobe
+              enabled: true
+              custom: true
+              spec:
+                exec:
+                  command: ["pg_isready", "-U", "temporal"]
+                initialDelaySeconds: 10
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+            readiness: *temporalpgprobe
+
+    temporal:
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        temporal:
+          image:
+            repository: temporalio/auto-setup
+            tag: "1.28.1"
+            pullPolicy: IfNotPresent
+          env:
+            DB: postgres12
+            DB_PORT: "5432"
+            POSTGRES_USER: temporal
+            POSTGRES_PWD: temporal
+            POSTGRES_SEEDS: postiz-temporal-postgresql
+            DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
+            ENABLE_ES: "true"
+            ES_SEEDS: postiz-temporal-elasticsearch
+            ES_VERSION: v7
+            TEMPORAL_NAMESPACE: default
+          probes:
+            startup:
+              enabled: true
+              type: TCP
+              port: 7233
+              spec:
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 30
+            liveness:
+              enabled: true
+              type: TCP
+              port: 7233
+            readiness:
+              enabled: true
+              type: TCP
+              port: 7233
+
+    temporal-ui:
+      type: deployment
+      strategy: Recreate
+      replicas: 1
+      containers:
+        temporal-ui:
+          image:
+            repository: temporalio/ui
+            tag: "2.34.0"
+            pullPolicy: IfNotPresent
+          env:
+            TEMPORAL_ADDRESS: "postiz-temporal:7233"
+            TEMPORAL_CORS_ORIGINS: "http://127.0.0.1:3000"
+
+  # -----------------------------------------------------------------------------
+  # Config
+  # -----------------------------------------------------------------------------
+  configMaps:
+    temporal-dynamicconfig:
+      enabled: true
+      data:
+        development-sql.yaml: |
+          limit.maxIDLength:
+            - value: 255
+              constraints: {}
+          system.forceSearchAttributesCacheRefreshOnRead:
+            - value: true
+              constraints: {}
+
+  # -----------------------------------------------------------------------------
+  # Storage
+  # -----------------------------------------------------------------------------
+  persistence:
+    config:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 1Gi
+      storageClass: nfs-client
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        postiz:
+          postiz:
+            - path: /config
+      retain: true
+
+    uploads:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 5Gi
+      storageClass: nfs-client
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        postiz:
+          postiz:
+            - path: /uploads
+      retain: true
+
+    database:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 5Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        postgres:
+          postgres:
+            - path: /var/lib/postgresql/data
+      retain: true
+
+    redis-data:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 1Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        redis:
+          redis:
+            - path: /data
+      retain: true
+
+    temporal-elasticsearch-data:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 2Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        temporal-elasticsearch:
+          temporal-elasticsearch:
+            - path: /usr/share/elasticsearch/data
+      retain: true
+
+    temporal-postgresql-data:
+      enabled: true
+      type: persistentVolumeClaim
+      size: 2Gi
+      storageClass: nfs-nosquash
+      accessMode: ReadWriteOnce
+      advancedMounts:
+        temporal-postgresql:
+          temporal-postgresql:
+            - path: /var/lib/postgresql/data
+      retain: true
+
+    temporal-dynamicconfig:
+      enabled: true
+      type: configMap
+      identifier: temporal-dynamicconfig
+      advancedMounts:
+        temporal:
+          temporal:
+            - path: /etc/temporal/config/dynamicconfig
+              readOnly: true
+
+  # -----------------------------------------------------------------------------
+  # Services
+  # -----------------------------------------------------------------------------
+  service:
+    postiz:
+      enabled: true
+      primary: true
+      controller: postiz
+      ports:
+        http:
+          port: 5000
+
+    postgres:
+      controller: postgres
+      type: ClusterIP
+      ports:
+        postgres:
+          port: 5432
+
+    redis:
+      controller: redis
+      type: ClusterIP
+      ports:
+        redis:
+          port: 6379
+
+    temporal-elasticsearch:
+      controller: temporal-elasticsearch
+      type: ClusterIP
+      ports:
+        http:
+          port: 9200
+
+    temporal-postgresql:
+      controller: temporal-postgresql
+      type: ClusterIP
+      ports:
+        postgres:
+          port: 5432
+
+    temporal:
+      controller: temporal
+      type: ClusterIP
+      ports:
+        grpc:
+          port: 7233
+
+    temporal-ui:
+      controller: temporal-ui
+      type: ClusterIP
+      ports:
+        http:
+          port: 8080
+
+  # -----------------------------------------------------------------------------
+  # Ingress
+  # -----------------------------------------------------------------------------
+  ingress:
+    postiz:
+      enabled: true
+      className: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/proxy-body-size: 500M
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+        nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+      hosts:
+        - host: postiz.lauckserv.com
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: postiz
+                port: http
+
+    # Temporal UI has no authentication - anyone who can reach it can view and
+    # terminate workflows. Left disabled; use
+    #   kubectl -n postiz port-forward svc/postiz-temporal-ui 8080
+    # or enable this behind an auth layer.
+    temporal-ui:
+      enabled: false
+      className: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx
+      hosts:
+        - host: postiz-temporal.lauckserv.com
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: temporal-ui
+                port: http
