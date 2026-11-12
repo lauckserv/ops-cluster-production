@@ -16,7 +16,7 @@ wordpress:
         fix-permissions:
           image:
             repository: busybox
-            tag: latest
+            tag: 1.37.0
           command:
             - sh
             - -c
@@ -44,15 +44,19 @@ wordpress:
                   key: mysql-secret
 
             WORDPRESS_CONFIG_EXTRA: |
+              define('WP_HOME', 'https://recruiting.moonareafootball.com');
+              define('WP_SITEURL', 'https://recruiting.moonareafootball.com');
+              define('WP_AUTO_UPDATE_CORE', false);
+              define('DISABLE_WP_CRON', true);
               $_SERVER['HTTPS'] = 'on';
 
             WORDPRESS_TABLE_PREFIX: wp_
             WORDPRESS_DEBUG: "0"
-            
-            # Additional PHP Configuration
-            PHP_MEMORY_LIMIT: 512M
-            PHP_UPLOAD_MAX_FILESIZE: 64M
-            PHP_POST_MAX_SIZE: 64M
+
+          # auth keys and salts (wp-salts, from Vault)
+          envFrom:
+            - secretRef:
+                name: wp-salts
 
           probes:
             liveness:
@@ -121,10 +125,32 @@ wordpress:
             MARIADB_DISABLE_UPGRADE_BACKUP: "1"
           
           probes:
+            startup:
+              enabled: true
+              type: TCP
+              spec:
+                periodSeconds: 10
+                failureThreshold: 30
             liveness:
-              enabled: false
+              enabled: true
+              custom: true
+              spec:
+                exec:
+                  command:
+                    - mariadb-admin
+                    - ping
+                    - -h
+                    - localhost
+                periodSeconds: 20
+                timeoutSeconds: 5
+                failureThreshold: 3
             readiness:
-              enabled: false
+              enabled: true
+              type: TCP
+              spec:
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 3
           
           resources:
             requests:
